@@ -30,6 +30,10 @@ Onboarding scripts may never condition write access on compliance, refuse to pro
 
 Improvements flow upstream to the root architecture. Customizations live in the vault layer. The community benefits from every operator's discoveries. A fork that doesn't contribute back is asynchronous rot.
 
-## Term 8: Building for My People
+## Term 8: Identity Is Opt-In, Not Default
+
+Every contributor chooses how they appear publicly — vault name, pseudonym, or randomized hash. The default is the most private option. No one is identified without their consent, at any touchpoint in the ecosystem. This applies to PRs, bug reports, feature requests, panel submissions, discussions, and documentation.
+
+## Term 9: Building for My People
 
 The people most harmed by illegible systems are least positioned to instrument them. Market solutions are ill-fitting by design. Bespoke systems built by and for ND people are not a luxury — they are the only thing that works. Build for the specific population; let generalization happen downstream.
