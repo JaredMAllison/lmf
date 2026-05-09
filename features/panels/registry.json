@@ -1,6 +1,16 @@
 {
   "version": 1,
-  "description": "Cockpit panel registry. Each panel declares id, name, sizes it supports, and feature it implements.",
+  "description": "Cockpit panel registry. Each panel declares id, name, sizes, feature, and trust tier.",
+  "trust_tiers": {
+    "0": "Solo — author only",
+    "1": "Vouched — ≥2 operators, ≥1 contributed review",
+    "2": "Validated — ≥3 operators, ≥2 contributor reviews"
+  },
+  "stability_tiers": {
+    "0": "Experimental — built and used by author, no external validation",
+    "1": "Tested — used by at least one non-author operator without modification",
+    "2": "Stable — tested across multiple neurological profiles"
+  },
   "panels": [
     {
       "id": "marlin-tasks",
@@ -8,7 +18,10 @@
       "feature": "surfacing-engine",
       "sizes": ["half", "full"],
       "icon": "star",
-      "description": "Current task queue — one at a time surfacing"
+      "description": "Current task queue — one at a time surfacing",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["adhd", "working-memory"]
     },
     {
       "id": "ttf-calendar",
@@ -16,7 +29,10 @@
       "feature": "temporal-layer",
       "sizes": ["full"],
       "icon": "clock",
-      "description": "Balloon timeline calendar — visual time perception"
+      "description": "Balloon timeline calendar — visual time perception",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["adhd", "time-blindness"]
     },
     {
       "id": "vault-browser",
@@ -24,7 +40,10 @@
       "feature": "vault",
       "sizes": ["half", "third", "full"],
       "icon": "folder",
-      "description": "File tree browser for the vault"
+      "description": "File tree browser for the vault",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["universal"]
     },
     {
       "id": "ai-chat",
@@ -32,7 +51,10 @@
       "feature": "capture-enrich",
       "sizes": ["half", "third", "full"],
       "icon": "message",
-      "description": "AI chat — capture, enrich, ask questions"
+      "description": "AI chat — capture, enrich, ask questions",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["universal"]
     },
     {
       "id": "inkscape",
@@ -40,7 +62,10 @@
       "feature": "capture-enrich",
       "sizes": ["half", "full"],
       "icon": "pen",
-      "description": "Sketch, notes, docs, diagrams — creative capture"
+      "description": "Sketch, notes, docs, diagrams — creative capture",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["creative", "adhd"]
     },
     {
       "id": "terminal",
@@ -48,7 +73,10 @@
       "feature": "universal",
       "sizes": ["full"],
       "icon": "terminal",
-      "description": "System terminal — Claude, git, file ops"
+      "description": "System terminal — Claude, git, file ops",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["universal"]
     },
     {
       "id": "quickhacks",
@@ -56,7 +84,10 @@
       "feature": "universal",
       "sizes": ["quart", "third"],
       "icon": "zap",
-      "description": "Mode switch, context, quick actions"
+      "description": "Mode switch, context, quick actions",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["universal"]
     },
     {
       "id": "projects",
@@ -64,7 +95,10 @@
       "feature": "vault",
       "sizes": ["half", "third", "full"],
       "icon": "briefcase",
-      "description": "Project dashboard — status, progress, next steps"
+      "description": "Project dashboard — status, progress, next steps",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["adhd", "executive-function"]
     },
     {
       "id": "sprint-timer",
@@ -72,7 +106,10 @@
       "feature": "writing-sprint",
       "sizes": ["quart", "third", "half"],
       "icon": "timer",
-      "description": "Pomodoro-style writing sprint with post-session log"
+      "description": "Pomodoro-style writing sprint with post-session log",
+      "stability": 0,
+      "trust": 0,
+      "profile_tags": ["writing", "adhd"]
     }
   ]
 }
