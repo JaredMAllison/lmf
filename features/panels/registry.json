@@ -21,7 +21,12 @@
       "description": "Current task queue — one at a time surfacing",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["adhd", "working-memory"]
+      "profile_tags": ["adhd", "working-memory"],
+      "identity": {
+        "interest": "I want to know what I should be doing right now without holding it in my head",
+        "roadblock": "Multiple simultaneous demands create paralysis — can't prioritize from a list",
+        "accommodation": "Shows one task at a time, context-filtered. The system holds the queue."
+      }
     },
     {
       "id": "ttf-calendar",
@@ -32,7 +37,12 @@
       "description": "Balloon timeline calendar — visual time perception",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["adhd", "time-blindness"]
+      "profile_tags": ["adhd", "time-blindness"],
+      "identity": {
+        "interest": "I need to feel how my day is shaped without constantly checking a clock",
+        "roadblock": "Time blindness — can't sense the passage of hours, appointments feel abstract",
+        "accommodation": "Balloon positions encode time of day visually; urgency pulsing encodes deadline pressure. Makes time spatial and legible."
+      }
     },
     {
       "id": "vault-browser",
@@ -43,7 +53,12 @@
       "description": "File tree browser for the vault",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["universal"]
+      "profile_tags": ["universal"],
+      "identity": {
+        "interest": "I want to browse and find things in my second brain",
+        "roadblock": "Standard file trees don't show note metadata; can't find what I need by context",
+        "accommodation": "Vault-aware file tree with frontmatter preview, tags, and search. Metadata visible at a glance."
+      }
     },
     {
       "id": "ai-chat",
@@ -54,7 +69,12 @@
       "description": "AI chat — capture, enrich, ask questions",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["universal"]
+      "profile_tags": ["universal"],
+      "identity": {
+        "interest": "I want to think out loud and have someone hold the thread",
+        "roadblock": "Working memory can't hold complex reasoning chains; trains of thought derail mid-sentence",
+        "accommodation": "Chat keeps full context. Externalizes reasoning — the conversation is the thinking."
+      }
     },
     {
       "id": "inkscape",
@@ -65,7 +85,12 @@
       "description": "Sketch, notes, docs, diagrams — creative capture",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["creative", "adhd"]
+      "profile_tags": ["creative", "adhd"],
+      "identity": {
+        "interest": "I need a low-friction space to dump ideas in any format",
+        "roadblock": "Choosing the right tool for a thought is a separate executive decision — kills the thought",
+        "accommodation": "Sketch, notes, docs, diagrams in one panel. Save to vault with one click. Format follows intent."
+      }
     },
     {
       "id": "terminal",
@@ -76,7 +101,12 @@
       "description": "System terminal — Claude, git, file ops",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["universal"]
+      "profile_tags": ["universal"],
+      "identity": {
+        "interest": "I need a shell embedded in my prosthetic environment",
+        "roadblock": "Context-switching to a separate terminal app breaks flow, loses the thread",
+        "accommodation": "Full terminal panel inside the cockpit. No alt-tab, no context break."
+      }
     },
     {
       "id": "quickhacks",
@@ -87,7 +117,12 @@
       "description": "Mode switch, context, quick actions",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["universal"]
+      "profile_tags": ["universal"],
+      "identity": {
+        "interest": "I want to change my state or trigger an action without navigating menus",
+        "roadblock": "Executive function tax accumulates per decision — menu navigation is a wall, not a step",
+        "accommodation": "One-tap mode switch, context display, common actions. Zero navigation, instant state change."
+      }
     },
     {
       "id": "projects",
@@ -98,7 +133,12 @@
       "description": "Project dashboard — status, progress, next steps",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["adhd", "executive-function"]
+      "profile_tags": ["adhd", "executive-function"],
+      "identity": {
+        "interest": "I need to see the state of everything I'm working on without opening each file",
+        "roadblock": "Object impermanence for projects — if I can't see it, it stops existing in my attention",
+        "accommodation": "Live dashboard of all projects with status, word counts, last session. Makes invisible work visible."
+      }
     },
     {
       "id": "sprint-timer",
@@ -109,7 +149,12 @@
       "description": "Pomodoro-style writing sprint with post-session log",
       "stability": 0,
       "trust": 0,
-      "profile_tags": ["writing", "adhd"]
+      "profile_tags": ["writing", "adhd"],
+      "identity": {
+        "interest": "I want to write in focused bursts without burning out",
+        "roadblock": "Hyperfocus or nothing — no middle gear. Either write for 4 hours or can't start.",
+        "accommodation": "Timed sprints (25min default) with post-session log. Bounds the session, captures where you stopped, sets tomorrow's entry point."
+      }
     }
   ]
 }
