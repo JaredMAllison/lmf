@@ -1,0 +1,15 @@
+{
+  "id": "command-center",
+  "name": "Command Center",
+  "description": "Terminal-first. Full-screen terminal with quickhacks sidebar.",
+  "instance": "marlin",
+  "tabs": [
+    {
+      "label": "Terminal",
+      "icon": "terminal",
+      "layout": [
+        { "panel": "terminal", "width": "full", "height": "full" }
+      ]
+    }
+  ]
+}

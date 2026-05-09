@@ -1,0 +1,16 @@
+{
+  "id": "map-room",
+  "name": "Map Room",
+  "description": "Time perception. TTF balloon calendar full-screen with quickhacks sidebar (1/3).",
+  "instance": "marlin",
+  "tabs": [
+    {
+      "label": "Map",
+      "icon": "clock",
+      "layout": [
+        { "panel": "ttf-calendar", "width": "full" }
+      ],
+      "sidebar": { "panel": "quickhacks", "width": "third" }
+    }
+  ]
+}

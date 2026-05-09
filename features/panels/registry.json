@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "description": "Cockpit panel registry. Each panel declares id, name, sizes it supports, and feature it implements.",
+  "panels": [
+    {
+      "id": "marlin-tasks",
+      "name": "Task Surface",
+      "feature": "surfacing-engine",
+      "sizes": ["half", "full"],
+      "icon": "star",
+      "description": "Current task queue — one at a time surfacing"
+    },
+    {
+      "id": "ttf-calendar",
+      "name": "Time Factory",
+      "feature": "temporal-layer",
+      "sizes": ["full"],
+      "icon": "clock",
+      "description": "Balloon timeline calendar — visual time perception"
+    },
+    {
+      "id": "vault-browser",
+      "name": "Vault",
+      "feature": "vault",
+      "sizes": ["half", "third", "full"],
+      "icon": "folder",
+      "description": "File tree browser for the vault"
+    },
+    {
+      "id": "ai-chat",
+      "name": "Assistant",
+      "feature": "capture-enrich",
+      "sizes": ["half", "third", "full"],
+      "icon": "message",
+      "description": "AI chat — capture, enrich, ask questions"
+    },
+    {
+      "id": "inkscape",
+      "name": "Ink Blotter",
+      "feature": "capture-enrich",
+      "sizes": ["half", "full"],
+      "icon": "pen",
+      "description": "Sketch, notes, docs, diagrams — creative capture"
+    },
+    {
+      "id": "terminal",
+      "name": "Terminal",
+      "feature": "universal",
+      "sizes": ["full"],
+      "icon": "terminal",
+      "description": "System terminal — Claude, git, file ops"
+    },
+    {
+      "id": "quickhacks",
+      "name": "Quickhacks",
+      "feature": "universal",
+      "sizes": ["quart", "third"],
+      "icon": "zap",
+      "description": "Mode switch, context, quick actions"
+    },
+    {
+      "id": "projects",
+      "name": "Projects",
+      "feature": "vault",
+      "sizes": ["half", "third", "full"],
+      "icon": "briefcase",
+      "description": "Project dashboard — status, progress, next steps"
+    },
+    {
+      "id": "sprint-timer",
+      "name": "Sprint Timer",
+      "feature": "writing-sprint",
+      "sizes": ["quart", "third", "half"],
+      "icon": "timer",
+      "description": "Pomodoro-style writing sprint with post-session log"
+    }
+  ]
+}

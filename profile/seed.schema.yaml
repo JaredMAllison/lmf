@@ -1,0 +1,63 @@
+# seed.yaml — Close Family profile seed schema
+# Deployer writes this before the operator's first session.
+# Confidence values: high (know for certain), medium (fairly sure), low (inferring)
+
+seed_author: ""              # who wrote this — displayed during init review
+seed_author_name_display: pseudonym  # real | pseudonym | asked — how the deployer wants to be referred to
+operator_name: ""            # the person this seed is for (real or pseudonym — system uses whatever operator confirms)
+operator_name_display: ask   # real | pseudonym | asked — opt-in: operator chooses during init
+relationship: ""             # e.g. brother, partner, sibling
+shared_context: ""           # e.g. "Shares my neurological profile"
+
+fields:
+  primary_need:
+    value: ""
+    confidence: ""           # high | medium | low
+    source: ""               # why the deployer thinks this
+
+  attention_profile:
+    value: ""                # short | medium | long
+    confidence: ""
+    source: ""
+
+  work_separate:
+    value: false             # true if work needs a separate instance
+    confidence: ""
+    source: ""
+
+  household_size:
+    value: 1
+    confidence: ""
+    source: ""
+
+  avoidances:
+    value: []                # things the operator would reject
+    confidence: ""
+    source: ""
+
+  projects_or_interests:
+    value: []                # what they care about
+    confidence: ""
+    source: ""
+
+  sleep_window:
+    value: ""                # morning | afternoon | night-owl
+    confidence: ""
+    source: ""
+
+gaps: []                     # fields the deployer explicitly doesn't know
+
+# ─── Name Display Rules ───
+#
+# real:       Use the person's real name in the UI and init flow.
+#             Only set this if the operator has explicitly opted in.
+#
+# pseudonym:  Use a pseudonym or handle. Default for public examples.
+#             The seed_author uses this when the real person hasn't consented
+#             to being named in the system.
+#
+# ask:        The assistant asks during init: "What should I call you?"
+#             Operator picks. Default for operator_name_display.
+#
+# Opt-in principle: No one is named publicly without their consent.
+# The seed schema always defaults to pseudonym or ask — never real.

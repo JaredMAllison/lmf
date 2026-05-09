@@ -1,0 +1,15 @@
+{
+  "id": "scriptorium",
+  "name": "Scriptorium",
+  "description": "Full composition environment for the ADHD writer. Editor (full) + binder sidebar (1/3) + corkboard grid (2/3 bottom).",
+  "instance": "scribner",
+  "tabs": [
+    {
+      "label": "Scriptorium",
+      "icon": "feather",
+      "layout": [
+        { "panel": "writing-editor", "width": "full", "height": "full" }
+      ]
+    }
+  ]
+}

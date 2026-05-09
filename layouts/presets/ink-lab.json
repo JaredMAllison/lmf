@@ -1,0 +1,15 @@
+{
+  "id": "ink-lab",
+  "name": "Ink Lab",
+  "description": "Creative capture. Sketch, notes, docs — equal thirds.",
+  "instance": "marlin",
+  "tabs": [
+    {
+      "label": "Ink",
+      "icon": "pen",
+      "layout": [
+        { "panel": "inkscape", "width": "full" }
+      ]
+    }
+  ]
+}

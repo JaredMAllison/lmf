@@ -1,0 +1,16 @@
+{
+  "id": "quest-log",
+  "name": "Quest Log",
+  "description": "Task focus. Projects (half) + task surface (half).",
+  "instance": "marlin",
+  "tabs": [
+    {
+      "label": "Quests",
+      "icon": "star",
+      "layout": [
+        { "panel": "projects", "width": "half" },
+        { "panel": "marlin-tasks", "width": "half" }
+      ]
+    }
+  ]
+}
