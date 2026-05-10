@@ -1,0 +1,12 @@
+{
+  "id": "marlin",
+  "name": "Marlin Tasks Panel",
+  "description": "Displays active tasks and ADLs for the personal Marlin instance.",
+  "sizes": ["full", "half"],
+  "feature_linkage": "tasks",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true
+}

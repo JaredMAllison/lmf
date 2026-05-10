@@ -1,0 +1,11 @@
+{
+  "id": "ttf-push",
+  "name": "TTF Push",
+  "description": "Pushes Marlin tasks to the Time Factory visual calendar, writing back the ttf_id.",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true,
+  "version": "1.0.0"
+}

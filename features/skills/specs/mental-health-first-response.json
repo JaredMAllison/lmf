@@ -1,0 +1,11 @@
+{
+  "id": "mental-health-first-response",
+  "name": "Mental Health First Response",
+  "description": "Crisis recognition, de‑escalation, suicidality assessment, and resource navigation.",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true,
+  "version": "1.0.0"
+}
