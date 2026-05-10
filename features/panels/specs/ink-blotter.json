@@ -1,0 +1,12 @@
+{
+  "id": "ink-blotter",
+  "name": "Ink Blotter Panel",
+  "description": "Provides a freeform drawing/ink area for brainstorming and sketching within the cockpit.",
+  "sizes": ["full", "half"],
+  "feature_linkage": "ink-blotter",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true
+}

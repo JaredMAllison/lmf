@@ -1,0 +1,13 @@
+{
+  "id": "oot",
+  "name": "Zelda OOT",
+  "palette": {
+    "primary": "#3C6E71",
+    "accent": "#F0A202",
+    "background": "#FAF3DD",
+    "text": "#17252A"
+  },
+  "icon_set": "hyrule",
+  "font": "Triforce",
+  "decoration_set": "rupee-glint"
+}

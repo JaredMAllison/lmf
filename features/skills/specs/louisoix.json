@@ -1,0 +1,11 @@
+{
+  "id": "louisoix",
+  "name": "Louisoix Advisor",
+  "description": "Master integrating advisor for communities of care, synthesizing 16 specialist frameworks.",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true,
+  "version": "1.0.0"
+}

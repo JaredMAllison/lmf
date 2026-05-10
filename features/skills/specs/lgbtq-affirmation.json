@@ -1,0 +1,11 @@
+{
+  "id": "lgbtq-affirmation",
+  "name": "LGBTQ+ Affirmation",
+  "description": "Deep, structural LGBTQ+ affirmation for communities of care.",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true,
+  "version": "1.0.0"
+}

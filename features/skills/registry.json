@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "description": "Skill registry for Louisoix‑integrated skills.",
+  "trust_tiers": {
+    "0": "Solo — author only",
+    "1": "Vouched — ≥2 operators, ≥1 contributed review",
+    "2": "Validated — ≥3 operators, ≥2 contributor reviews"
+  },
+  "stability_tiers": {
+    "0": "Experimental — built and used by author, no external validation",
+    "1": "Tested — used by at least one non-author operator without modification",
+    "2": "Stable — tested across multiple neurological profiles"
+  },
+  "skills": [
+    {
+      "id": "marlin-capture",
+      "name": "Capture Fast Tasks",
+      "feature": "capture",
+      "stability": 0,
+      "trust": 0,
+      "description": "Fast task/project capture into the inbox"
+    },
+    {
+      "id": "scribe-digest",
+      "name": "Scribe Digest",
+      "feature": "learning",
+      "stability": 0,
+      "trust": 0,
+      "description": "Parse writing‑technique content against Tori’s method"
+    },
+    {
+      "id": "marlin-enrich",
+      "name": "Enrich Vault",
+      "feature": "enrich",
+      "stability": 0,
+      "trust": 0,
+      "description": "Structured enrichment of inbox notes"
+    },
+    {
+      "id": "quota-guard",
+      "name": "Quota Guard",
+      "feature": "quota",
+      "stability": 0,
+      "trust": 0,
+      "description": "Weekly quota checks for builds"
+    },
+    {
+      "id": "marlin-close",
+      "name": "Evening Anchor",
+      "feature": "daily-close",
+      "stability": 0,
+      "trust": 0,
+      "description": "Evening routine and task finalization"
+    },
+    {
+      "id": "marlin-open",
+      "name": "Morning Anchor",
+      "feature": "daily-open",
+      "stability": 0,
+      "trust": 0,
+      "description": "Morning routine and task surfacing"
+    },
+    {
+      "id": "marlin-build",
+      "name": "Build Workflow",
+      "feature": "build",
+      "stability": 0,
+      "trust": 0,
+      "description": "Orchestrates spec → subagent → PR creation"
+    },
+    {
+      "id": "economic-precarity",
+      "name": "Economic Precarity",
+      "feature": "guidance",
+      "stability": 0,
+      "trust": 0,
+      "description": "Guides community members through income instability, benefits, debt, etc."
+    },
+    {
+      "id": "lgbtq-affirmation",
+      "name": "LGBTQ+ Affirmation",
+      "feature": "affirmation",
+      "stability": 0,
+      "trust": 0,
+      "description": "Deep structural LGBTQ+ community support"
+    },
+    {
+      "id": "sex-positivity",
+      "name": "Sex Positivity",
+      "feature": "relationships",
+      "stability": 0,
+      "trust": 0,
+      "description": "Guidance on relationship diversity, sexual shame, consent culture"
+    },
+    {
+      "id": "project-reload",
+      "name": "Project Reload",
+      "feature": "project",
+      "stability": 0,
+      "trust": 0,
+      "description": "Loads project details and recent context"
+    },
+    {
+      "id": "job-assess",
+      "name": "Job Assess",
+      "feature": "assessment",
+      "stability": 0,
+      "trust": 0,
+      "description": "Evaluates job listings against Jared’s profile and AuDHD needs"
+    },
+    {
+      "id": "louisoix",
+      "name": "Louisoix Advisor",
+      "feature": "integrator",
+      "stability": 0,
+      "trust": 0,
+      "description": "Master community‑care advisor integrating 16 frameworks"
+    },
+    {
+      "id": "ttf-push",
+      "name": "TTF Push",
+      "feature": "integration",
+      "stability": 0,
+      "trust": 0,
+      "description": "Pushes Marlin tasks to Time Factory"
+    },
+    {
+      "id": "neurodivergence-care",
+      "name": "Neurodivergence Care",
+      "feature": "neuro",
+      "stability": 0,
+      "trust": 0,
+      "description": "Support for autistic, ADHD, AuDHD members"
+    },
+    {
+      "id": "mental-health-first-response",
+      "name": "Mental Health First Response",
+      "feature": "crisis",
+      "stability": 0,
+      "trust": 0,
+      "description": "Crisis recognition, de‑escalation, suicidality assessment"
+    },
+    {
+      "id": "trauma-informed-care",
+      "name": "Trauma‑Informed Care",
+      "feature": "trauma",
+      "stability": 0,
+      "trust": 0,
+      "description": "Safety, trustworthiness, peer support, empowerment guidance"
+    }
+  ]
+}

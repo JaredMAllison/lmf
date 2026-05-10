@@ -1,0 +1,12 @@
+{
+  "id": "ai-chat",
+  "name": "AI Chat Panel",
+  "description": "Chat interface for the Ariel AI assistant, supporting citations and session history.",
+  "sizes": ["full", "half"],
+  "feature_linkage": "ai-chat",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true
+}

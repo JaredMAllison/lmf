@@ -1,0 +1,11 @@
+{
+  "id": "project-reload",
+  "name": "Project Reload",
+  "description": "Loads a project file, its open tasks, recent mentions, and linked notes for a quick briefing.",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": true,
+  "version": "1.0.0"
+}
