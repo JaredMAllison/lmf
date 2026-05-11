@@ -5,7 +5,7 @@ HTTP server that sits between the user and the configured backend.
 Each turn: parses skill triggers, assembles context, calls backend, returns response.
 
 Endpoints:
-  GET  /        → serves ui/ariel.html (browser UI)
+  GET  /        → serves the instance UI file (set via run_with ui_file param)
   POST /chat   { "message": "..." }  → { "response": "..." }
   POST /reset                        → resets conversation history
   GET  /health                       → { "status": "ok" }
@@ -92,7 +92,7 @@ MAX_TOOL_LOOPS    = 5     # max tool call rounds per turn before forcing a text 
 HOST              = "0.0.0.0"
 PORT              = 8742
 SKILLS_DIR        = "System/Skills"
-UI_FILE           = Path(__file__).parent.parent / "features" / "ui" / "ariel.html"
+UI_FILE: Path | None = None  # set by run_with() via Handler.ui_file
 
 # Backend + pacing globals — populated by _init_backends()
 BACKENDS          : list[tuple[int, object]] = []
@@ -170,6 +170,8 @@ def parse_skill_trigger(message: str) -> str | None:
 
 
 class Orchestrator:
+    _TURBO_COMMANDS: frozenset[str] = frozenset({"/turbo"})
+
     def __init__(self, vault_path: str, test_mode: bool = False, tools_config_path: Path | None = None):
         self.vault = Path(vault_path)
         self.is_init_mode = self._is_first_run()
@@ -581,7 +583,7 @@ class Orchestrator:
                 self.init_handoff = None
 
         # --- Turbo toggle (intercepted before model) ---
-        if user_message.strip().lower() in ("/marlin-turbo", "/turbo"):
+        if user_message.strip().lower() in self._TURBO_COMMANDS:
             TURBO_MODE = not TURBO_MODE
             state = "Turbo ON — pacing disabled" if TURBO_MODE else "Slow mode ON — pacing active"
             return state
@@ -705,6 +707,7 @@ class Orchestrator:
 
 class Handler(BaseHTTPRequestHandler):
     orchestrator: Orchestrator = None
+    ui_file: Path | None = None
 
     def log_message(self, format, *args):
         pass  # quiet default logging
@@ -722,10 +725,10 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
     def _serve_ui(self):
-        if not UI_FILE.exists():
-            self._respond(404, {"error": "ui/ariel.html not found"})
+        if self.ui_file is None or not self.ui_file.exists():
+            self._respond(404, {"error": "UI file not configured"})
             return
-        content = UI_FILE.read_bytes()
+        content = self.ui_file.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", len(content))
@@ -838,7 +841,7 @@ class Handler(BaseHTTPRequestHandler):
             self._respond(404, {"error": "not found"})
 
 
-def run_with(orchestrator_class, vault_path: str, *, config_path: Path | None = None, tools_config_path: Path | None = None):
+def run_with(orchestrator_class, vault_path: str, *, config_path: Path | None = None, tools_config_path: Path | None = None, ui_file: Path | None = None):
     """Start the HTTP server using the given orchestrator subclass.
 
     Args:
@@ -846,10 +849,12 @@ def run_with(orchestrator_class, vault_path: str, *, config_path: Path | None = 
         vault_path: Absolute path to the LMF vault.
         config_path: Path to operator/config.yaml (defaults to vault/../operator/config.yaml).
         tools_config_path: Path to tools.config.yaml (defaults to lmf package dir).
+        ui_file: Path to the HTML file served at GET / and GET /ui. If None, returns 404.
     """
     _init_config(config_path)
     orch = orchestrator_class(vault_path, tools_config_path=tools_config_path)
     Handler.orchestrator = orch
+    Handler.ui_file = ui_file
     server = HTTPServer((HOST, PORT), Handler)
     try:
         server.serve_forever()
