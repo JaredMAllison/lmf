@@ -32,7 +32,21 @@ from lmf.backends import build_backend, BackendError, RateLimitError, BackendRes
 # Write tool names — used for tool gating in init mode
 _WRITE_TOOLS = {"append_to_file", "replace_lines", "create_file", "insert_after_heading"}
 
+_WRITE_ACTION_LABELS = {
+    "append_to_file":       "append to",
+    "replace_lines":        "replace lines in",
+    "create_file":          "create",
+    "insert_after_heading": "insert into",
+}
+
 _CONFIRMATION_YES = {"yes", "y", "yeah", "yep", "sure", "ok", "go ahead", "confirm", "do it"}
+
+
+def _format_proposal(tool_name: str, args: dict) -> str:
+    action    = _WRITE_ACTION_LABELS.get(tool_name, "write to")
+    file_path = args.get("file_path", "unknown file")
+    content   = args.get("content") or args.get("new_content", "")
+    return f"Ariel wants to {action} `{file_path}`:\n\n{content}\n\nConfirm? (yes/no)"
 
 INIT_STATE_PATH = "operator/.init_state.json"
 DEPLOY_CONFIG_PATH = "operator/deploy.yaml"
