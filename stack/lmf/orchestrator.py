@@ -28,6 +28,7 @@ import yaml
 from lmf.build_prompt import build_prompt
 
 from lmf.backends import build_backend, BackendError, RateLimitError, BackendResult
+from lmf.vault_io import VaultIO
 
 # Write tool names — used for tool gating in init mode
 _WRITE_TOOLS = {"append_to_file", "replace_lines", "create_file", "insert_after_heading"}
@@ -195,6 +196,10 @@ class Orchestrator:
         self.last_tool_calls: list[str] = []
         self.init_handoff = None
         self.test_mode = test_mode
+        self.pending_write: dict | None = None
+        self.verbose_writes: bool = False
+        self.allow_external_writes: bool = False
+        self.kb = VaultIO(vault_path)
 
         self.loom_url = os.environ.get("LOOM_URL", "http://knowledge-loom:8888")
 
@@ -214,6 +219,15 @@ class Orchestrator:
         else:
             print("[orchestrator] Tools: none (Phase 1 mode)")
         print(f"[orchestrator] Listening on {HOST}:{PORT}")
+
+        if not BACKENDS:
+            fallback_cfg = {
+                "type": "ollama",
+                "base_url": (OLLAMA_URL or "http://localhost:11434").rstrip("/api/chat"),
+                "model": OLLAMA_MODEL or "qwen2.5:3b",
+                "num_ctx": OLLAMA_NUM_CTX or 8192,
+            }
+            BACKENDS.append((0, build_backend("legacy-ollama", fallback_cfg)))
 
     def _is_first_run(self) -> bool:
         return not (self.vault / "LOCAL_MIND_FOUNDATION.md").exists()
@@ -246,6 +260,7 @@ class Orchestrator:
 
     def reset(self):
         self.history = []
+        self.pending_write = None
         if self.is_init_mode:
             self._clear_init_state()
 
