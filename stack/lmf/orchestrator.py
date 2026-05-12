@@ -28,6 +28,7 @@ import yaml
 from lmf.build_prompt import build_prompt
 
 from lmf.backends import build_backend, BackendError, RateLimitError, BackendResult
+from lmf.vault_io import VaultIO
 
 # Write tool names — used for tool gating in init mode
 _WRITE_TOOLS = {"append_to_file", "replace_lines", "create_file", "insert_after_heading"}
@@ -195,6 +196,10 @@ class Orchestrator:
         self.last_tool_calls: list[str] = []
         self.init_handoff = None
         self.test_mode = test_mode
+        self.pending_write: dict | None = None
+        self.verbose_writes: bool = False
+        self.allow_external_writes: bool = False
+        self.kb = VaultIO(vault_path)
 
         self.loom_url = os.environ.get("LOOM_URL", "http://knowledge-loom:8888")
 
@@ -214,6 +219,15 @@ class Orchestrator:
         else:
             print("[orchestrator] Tools: none (Phase 1 mode)")
         print(f"[orchestrator] Listening on {HOST}:{PORT}")
+
+        if not BACKENDS:
+            fallback_cfg = {
+                "type": "ollama",
+                "base_url": (OLLAMA_URL or "http://localhost:11434").rstrip("/api/chat"),
+                "model": OLLAMA_MODEL or "qwen2.5:3b",
+                "num_ctx": OLLAMA_NUM_CTX or 8192,
+            }
+            BACKENDS.append((0, build_backend("legacy-ollama", fallback_cfg)))
 
     def _is_first_run(self) -> bool:
         return not (self.vault / "LOCAL_MIND_FOUNDATION.md").exists()
@@ -246,6 +260,7 @@ class Orchestrator:
 
     def reset(self):
         self.history = []
+        self.pending_write = None
         if self.is_init_mode:
             self._clear_init_state()
 
@@ -396,6 +411,23 @@ class Orchestrator:
             },
             "required": ["file_path", "start_line", "end_line", "new_content"],
         },
+        "create_file": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "Vault-relative path for the new file"},
+                "content":   {"type": "string", "description": "Full file content"},
+            },
+            "required": ["file_path", "content"],
+        },
+        "insert_after_heading": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "Vault-relative path"},
+                "heading":   {"type": "string", "description": "Heading to insert after — substring match"},
+                "content":   {"type": "string", "description": "Content to insert"},
+            },
+            "required": ["file_path", "heading", "content"],
+        },
         "list_files": {
             "type": "object",
             "properties": {},
@@ -545,17 +577,19 @@ class Orchestrator:
 
     def _dispatch_tool(self, name: str, args: dict) -> str:
         try:
-            # Init mode write gate — only append_to_file to Inbox.md
-            if self.is_init_mode:
-                if name == "append_to_file" and args.get("file_path") == "Inbox.md":
-                    inbox = self.vault / "Inbox.md"
-                    inbox.parent.mkdir(parents=True, exist_ok=True)
-                    with open(inbox, "a", encoding="utf-8") as f:
-                        f.write(args["content"].strip() + "\n")
-                    return json.dumps({"status": "appended to Inbox.md"})
-                if name in _WRITE_TOOLS:
-                    return json.dumps({"error": "In init mode, write tools are limited to Inbox.md"})
-                return json.dumps({"error": "Vault tools are unavailable during init mode"})
+            # Path validation — always first, before any mode checks
+            if name in _WRITE_TOOLS and not self.allow_external_writes:
+                file_path = args.get("file_path", "")
+                if file_path.startswith("/") or ".." in file_path:
+                    return json.dumps({"error": f"external writes disabled: {file_path}"})
+
+            # Init mode: inline Inbox.md append only (vault may not be set up yet)
+            if self.is_init_mode and name == "append_to_file" and args.get("file_path") == "Inbox.md":
+                inbox = self.vault / "Inbox.md"
+                inbox.parent.mkdir(parents=True, exist_ok=True)
+                with open(inbox, "a", encoding="utf-8") as f:
+                    f.write(args["content"].strip() + "\n")
+                return json.dumps({"status": "appended to Inbox.md"})
 
             self.last_tool_calls.append(name)
 
@@ -572,13 +606,17 @@ class Orchestrator:
             if name == "grep_vault":
                 return json.dumps(self._tool_grep(args["pattern"], file_filter=args.get("file_filter")))
             if name == "append_to_file":
-                return json.dumps(self._tool_append_to_file(args["file_path"], args["content"]))
+                return json.dumps(self.kb.append_to_file(args["file_path"], args["content"]))
             if name == "replace_lines":
-                return json.dumps(self._tool_replace_lines(
-                    args["file_path"], args["start_line"], args["end_line"], args["new_content"]
-                ))
+                return json.dumps(self.kb.replace_lines(
+                    args["file_path"], args["start_line"], args["end_line"], args["new_content"]))
+            if name == "create_file":
+                return json.dumps(self.kb.create_file(args["file_path"], args["content"]))
+            if name == "insert_after_heading":
+                return json.dumps(self.kb.insert_after_heading(
+                    args["file_path"], args["heading"], args["content"]))
             if name == "list_files":
-                return json.dumps(self._tool_list_files())
+                return json.dumps(self.kb.list_files())
             return json.dumps({"error": f"Unknown tool: {name}"})
         except Exception as e:
             return json.dumps({"error": str(e)})
@@ -595,6 +633,20 @@ class Orchestrator:
             else:
                 shutil.rmtree(self.vault / ".proposed", ignore_errors=True)
                 self.init_handoff = None
+
+        # Write gate: pending approval
+        if self.pending_write:
+            if is_confirmation(user_message):
+                name = self.pending_write["name"]
+                args = self.pending_write["args"]
+                self.pending_write = None
+                raw = self._dispatch_tool(name, args)
+                if self.verbose_writes or self.test_mode:
+                    return f"Done. ✓ Written to `{args.get('file_path', 'file')}`"
+                return f"Done. {raw}"
+            else:
+                self.pending_write = None
+                return "Okay, I won't make that change."
 
         # --- Turbo toggle (intercepted before model) ---
         if user_message.strip().lower() in self._TURBO_COMMANDS:
@@ -634,6 +686,7 @@ class Orchestrator:
             LAST_REQUEST_TIME = time.monotonic()
 
             # ---- Backend dispatch ----
+            pending_write_fired = False
             for _ in range(MAX_TOOL_LOOPS):
                 result = None
                 last_error = None
@@ -684,7 +737,18 @@ class Orchestrator:
                     fn_args = tc["function"]["arguments"]
                     if isinstance(fn_args, str):
                         fn_args = json.loads(fn_args)
-                    messages.append({"role": "tool", "content": self._dispatch_tool(fn_name, fn_args)})
+
+                    if fn_name in _WRITE_TOOLS:
+                        proposal = _format_proposal(fn_name, fn_args)
+                        self.pending_write = {"name": fn_name, "args": fn_args, "proposal": proposal}
+                        reply = proposal
+                        pending_write_fired = True
+                        break
+                    else:
+                        messages.append({"role": "tool", "content": self._dispatch_tool(fn_name, fn_args)})
+
+                if pending_write_fired:
+                    break
             else:
                 reply = "[Tool loop limit reached — please rephrase your request.]"
         finally:
