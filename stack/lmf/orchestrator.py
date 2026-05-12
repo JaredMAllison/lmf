@@ -672,6 +672,7 @@ class Orchestrator:
             LAST_REQUEST_TIME = time.monotonic()
 
             # ---- Backend dispatch ----
+            pending_write_fired = False
             for _ in range(MAX_TOOL_LOOPS):
                 result = None
                 last_error = None
@@ -722,7 +723,18 @@ class Orchestrator:
                     fn_args = tc["function"]["arguments"]
                     if isinstance(fn_args, str):
                         fn_args = json.loads(fn_args)
-                    messages.append({"role": "tool", "content": self._dispatch_tool(fn_name, fn_args)})
+
+                    if fn_name in _WRITE_TOOLS:
+                        proposal = _format_proposal(fn_name, fn_args)
+                        self.pending_write = {"name": fn_name, "args": fn_args, "proposal": proposal}
+                        reply = proposal
+                        pending_write_fired = True
+                        break
+                    else:
+                        messages.append({"role": "tool", "content": self._dispatch_tool(fn_name, fn_args)})
+
+                if pending_write_fired:
+                    break
             else:
                 reply = "[Tool loop limit reached — please rephrase your request.]"
         finally:
