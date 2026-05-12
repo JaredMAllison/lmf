@@ -634,6 +634,20 @@ class Orchestrator:
                 shutil.rmtree(self.vault / ".proposed", ignore_errors=True)
                 self.init_handoff = None
 
+        # Write gate: pending approval
+        if self.pending_write:
+            if is_confirmation(user_message):
+                name = self.pending_write["name"]
+                args = self.pending_write["args"]
+                self.pending_write = None
+                raw = self._dispatch_tool(name, args)
+                if self.verbose_writes or self.test_mode:
+                    return f"Done. ✓ Written to `{args.get('file_path', 'file')}`"
+                return f"Done. {raw}"
+            else:
+                self.pending_write = None
+                return "Okay, I won't make that change."
+
         # --- Turbo toggle (intercepted before model) ---
         if user_message.strip().lower() in self._TURBO_COMMANDS:
             TURBO_MODE = not TURBO_MODE
