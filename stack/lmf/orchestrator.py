@@ -411,6 +411,23 @@ class Orchestrator:
             },
             "required": ["file_path", "start_line", "end_line", "new_content"],
         },
+        "create_file": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "Vault-relative path for the new file"},
+                "content":   {"type": "string", "description": "Full file content"},
+            },
+            "required": ["file_path", "content"],
+        },
+        "insert_after_heading": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "Vault-relative path"},
+                "heading":   {"type": "string", "description": "Heading to insert after — substring match"},
+                "content":   {"type": "string", "description": "Content to insert"},
+            },
+            "required": ["file_path", "heading", "content"],
+        },
         "list_files": {
             "type": "object",
             "properties": {},
@@ -560,17 +577,19 @@ class Orchestrator:
 
     def _dispatch_tool(self, name: str, args: dict) -> str:
         try:
-            # Init mode write gate — only append_to_file to Inbox.md
-            if self.is_init_mode:
-                if name == "append_to_file" and args.get("file_path") == "Inbox.md":
-                    inbox = self.vault / "Inbox.md"
-                    inbox.parent.mkdir(parents=True, exist_ok=True)
-                    with open(inbox, "a", encoding="utf-8") as f:
-                        f.write(args["content"].strip() + "\n")
-                    return json.dumps({"status": "appended to Inbox.md"})
-                if name in _WRITE_TOOLS:
-                    return json.dumps({"error": "In init mode, write tools are limited to Inbox.md"})
-                return json.dumps({"error": "Vault tools are unavailable during init mode"})
+            # Path validation — always first, before any mode checks
+            if name in _WRITE_TOOLS and not self.allow_external_writes:
+                file_path = args.get("file_path", "")
+                if file_path.startswith("/") or ".." in file_path:
+                    return json.dumps({"error": f"external writes disabled: {file_path}"})
+
+            # Init mode: inline Inbox.md append only (vault may not be set up yet)
+            if self.is_init_mode and name == "append_to_file" and args.get("file_path") == "Inbox.md":
+                inbox = self.vault / "Inbox.md"
+                inbox.parent.mkdir(parents=True, exist_ok=True)
+                with open(inbox, "a", encoding="utf-8") as f:
+                    f.write(args["content"].strip() + "\n")
+                return json.dumps({"status": "appended to Inbox.md"})
 
             self.last_tool_calls.append(name)
 
@@ -587,13 +606,17 @@ class Orchestrator:
             if name == "grep_vault":
                 return json.dumps(self._tool_grep(args["pattern"], file_filter=args.get("file_filter")))
             if name == "append_to_file":
-                return json.dumps(self._tool_append_to_file(args["file_path"], args["content"]))
+                return json.dumps(self.kb.append_to_file(args["file_path"], args["content"]))
             if name == "replace_lines":
-                return json.dumps(self._tool_replace_lines(
-                    args["file_path"], args["start_line"], args["end_line"], args["new_content"]
-                ))
+                return json.dumps(self.kb.replace_lines(
+                    args["file_path"], args["start_line"], args["end_line"], args["new_content"]))
+            if name == "create_file":
+                return json.dumps(self.kb.create_file(args["file_path"], args["content"]))
+            if name == "insert_after_heading":
+                return json.dumps(self.kb.insert_after_heading(
+                    args["file_path"], args["heading"], args["content"]))
             if name == "list_files":
-                return json.dumps(self._tool_list_files())
+                return json.dumps(self.kb.list_files())
             return json.dumps({"error": f"Unknown tool: {name}"})
         except Exception as e:
             return json.dumps({"error": str(e)})
