@@ -17,9 +17,8 @@ lmf/
 │   ├── covenant.md   The LMF Covenant — non-negotiable terms
 │   └── principles.md Design values
 ├── profile/          Profile schemas and templates
-│   ├── schema.yaml   LOCAL_MIND_FOUNDATION.md schema
-│   ├── seed.yaml     Close Family seed schema
-│   └── templates/    Default profiles per instance type
+│   ├── seed.schema.yaml   Close Family seed schema — LOCAL_MIND_FOUNDATION.md profile definition
+│   └── templates/        Default profiles per instance type
 ├── features/         Feature and panel inventory
 │   ├── _index.md     All features, tagged universal vs. instance
 │   └── panels/       Cockpit panel declarations

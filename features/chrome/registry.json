@@ -2,8 +2,6 @@
   "version": 1,
   "description": "UI chrome theme registry for the Cockpit. Each theme defines colour palette, fonts, and decorative assets.",
   "themes": [
-    {"id": "oot", "name": "Zelda OOT", "file": "oot.json"},
-    {"id": "fae", "name": "Fae", "file": "fae.json"},
-    {"id": "star-wars", "name": "Star Wars", "file": "star-wars.json"}
+    {"id": "oot", "name": "Zelda OOT", "file": "oot.json"}
   ]
 }

@@ -1,4 +1,4 @@
-# seed.yaml — Close Family profile seed schema
+# seed.schema.yaml — Close Family profile seed schema
 # Deployer writes this before the operator's first session.
 # Confidence values: high (know for certain), medium (fairly sure), low (inferring)
 
