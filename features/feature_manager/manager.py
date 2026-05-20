@@ -9,8 +9,8 @@ import urllib.error
 from pathlib import Path
 
 SCHEMA_PATH = Path(__file__).parent.parent / "schema" / "package-manifest.schema.json"
-PANELS_REGISTRY = Path(__file__).parent.parent / "panels" / "registry.json"
-SKILLS_REGISTRY = Path(__file__).parent.parent / "skills" / "registry.json"
+PANELS_REGISTRY = Path(__file__).parent.parent / "panels" / "catalog.json"
+SKILLS_REGISTRY = Path(__file__).parent.parent / "skills" / "catalog.json"
 
 WORKSPACE_DIR = Path(os.getenv("LMF_WORKSPACE", "/tmp/lmf-install"))
 INSTALLED_MANIFEST = WORKSPACE_DIR / "installed.json"
@@ -25,7 +25,15 @@ def load_schema(path=None):
 
 def load_registry(path):
     with open(path) as f:
-        return json.load(f)
+        data = json.load(f)
+    if isinstance(data, list):
+        return data  # flat array format (legacy)
+    if isinstance(data, dict):
+        # Nested format — extract the array by known key
+        for key in ("panels", "skills"):
+            if key in data:
+                return data[key]
+    return data
 
 
 def validate_manifest(manifest, schema=None):
