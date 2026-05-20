@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LMF Package Install Manifest",
+  "description": "Per-package install contract. Lives at the root of each panel/skill repo as lmf-manifest.json.",
+  "type": "object",
+  "required": ["name", "version", "type"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Must match the catalog entry name (e.g. panel.marlin)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["panel", "skill", "plugin", "service"]
+    },
+    "install": {
+      "type": "array",
+      "description": "Shell commands to run during installation",
+      "items": { "type": "string" }
+    },
+    "panel_entry": {
+      "type": "object",
+      "description": "Cockpit panel registration (type=panel only)",
+      "properties": {
+        "host": { "type": "string" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "route": { "type": "string" }
+      }
+    },
+    "health_endpoint": {
+      "type": "string",
+      "description": "Relative URL for health checks (e.g. /health)"
+    }
+  },
+  "additionalProperties": false
+}
