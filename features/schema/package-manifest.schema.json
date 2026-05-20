@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LMF Package Manifest",
+  "description": "Schema for LMF panel, skill, and plugin manifests used by the Feature Manager.",
+  "type": "object",
+  "required": ["name", "version", "type"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique identifier for the package (e.g. panel.marlin)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version string"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["panel", "skill", "plugin", "service"],
+      "description": "Package type"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable summary"
+    },
+    "source": {
+      "type": "object",
+      "description": "Where to fetch the package source code",
+      "properties": {
+        "git": { "type": "string", "format": "uri" },
+        "path": { "type": "string" },
+        "docker": { "type": "string" }
+      },
+      "oneOf": [
+        { "required": ["git"] },
+        { "required": ["path"] },
+        { "required": ["docker"] }
+      ]
+    },
+    "install": {
+      "type": "array",
+      "description": "Shell commands to run during installation",
+      "items": { "type": "string" }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Names of other packages required first",
+      "items": { "type": "string" }
+    },
+    "panel_entry": {
+      "type": "object",
+      "description": "Cockpit panel registration (type=panel only)",
+      "properties": {
+        "host": { "type": "string" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "route": { "type": "string" }
+      }
+    },
+    "health_endpoint": {
+      "type": "string",
+      "description": "Relative URL for health checks (e.g. /health)"
+    },
+    "trust_level": {
+      "type": "string",
+      "enum": ["Solo", "Vouched", "Validated"],
+      "description": "Minimum trust level required"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Planned", "Experimental", "Stable", "Deprecated"],
+      "description": "Feature stability"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

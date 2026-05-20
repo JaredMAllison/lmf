@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LMF Lock File",
+  "description": "Records currently installed packages. Written by the Feature Manager at ~/.lmf/installed-lock.json. Never edited by hand. Never committed to git.",
+  "type": "object",
+  "required": ["version", "entries"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "Lock file format version"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "version", "source", "installed_at"],
+        "properties": {
+          "name": { "type": "string" },
+          "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+          "source": {
+            "type": "object",
+            "properties": {
+              "git": { "type": "string" },
+              "path": { "type": "string" }
+            }
+          },
+          "installed_at": {
+            "type": "string",
+            "description": "UTC ISO 8601 datetime string"
+          },
+          "panel_entry": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "host": { "type": "string" },
+                  "port": { "type": "integer" },
+                  "route": { "type": "string" }
+                }
+              },
+              { "type": "null" }
+            ]
+          },
+          "health_endpoint": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
