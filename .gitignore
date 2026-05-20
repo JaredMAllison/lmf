@@ -1,0 +1,10 @@
+.opencode/
+.claude/
+.knowledge-loom-index/
+.obsidian/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# LMF lock file (machine state — not committed)
+features/installed-lock.json
