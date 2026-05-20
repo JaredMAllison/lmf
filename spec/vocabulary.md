@@ -40,3 +40,19 @@ This document sits beside the Covenant as a sibling. The Covenant states the non
 | `assistant` | The model after binding — the named AI collaborator for a specific instance. Named as `<Name> von <Instance>` (e.g. Ariel von Marlin). Has a personality, can invoke skills, operates within write gate constraints. | A chatbot. Not a product. The assistant is a relationship. |
 | `orchestrator` | The runtime that makes the binding operational. Routes the operator's intent to the right model or domain expert, loads vault context, invokes skills, and enforces the write gate. The machinery that turns model + vault + personality into a working assistant. | The assistant. The orchestrator is what the assistant runs on — the operator experiences the assistant, not the orchestrator. |
 | `domain expert` | A sub-assistant with a narrower personality scoped to a specific domain (scheduling, coaching, writing). Same model class as the assistant; different imprinting. Invoked by the orchestrator when the operator's intent matches the domain. | A plugin. Not a separate AI. A domain expert is a constrained expression of the same underlying model. |
+
+---
+
+## Extensions
+
+Extensions are vaults the operator dispatches into from their home cockpit. They are lighter than instances — no full binding, no named assistant, no init required. Project vaults and knowledge vaults are extensions. A colleague relationship is naturally expressed through a shared extension.
+
+| Term | Definition | Not |
+|---|---|---|
+| `extension` | A vault the operator dispatches into from their home cockpit. No full binding, no named assistant, no init. Project vaults and knowledge vaults are extensions. May be shared with collaborators. | An instance. Extensions don't carry the operator's exobrain. They're workspaces. |
+| `home vault` | The operator's primary vault — where their cockpit lives, their assistant is bound, their exobrain resides. | Any vault. An operator has one home vault. Extensions are visited from it, not lived in. |
+| `project vault` | An extension scoped to a specific creative or operational project. Has a project index, a role archetype, and a `VAULT.md` defining vault-specific grounding. May be shared with collaborators. Examples: RPG campaign, Let's Play series, data investigation. | An instance. A project vault doesn't need init or a bound assistant to be useful. |
+| `knowledge vault` | An extension holding curated reference or domain knowledge — publicly derived, not personal. May have its own skill set. May be managed on behalf of a beneficiary who isn't the primary operator. | An exobrain. Knowledge vaults are reference material, not a second mind. |
+| `dispatch` | Sending a model into an extension's context from the home cockpit. The model receives grounding, a role archetype, and an entry point. Not a binding — the model is oriented in the extension, not imprinted to it. Task-scoped. | Binding. Dispatch is temporary and scoped; binding is persistent and relational. |
+| `grounding` | The minimal context package given to a dispatched model: who the operator is, what vault they're in, what the project index says, and the role archetype. Defined in the extension's `VAULT.md`. | A system prompt. Grounding is specific to this vault and this dispatch, not a generic instruction set. |
+| `role archetype` | The scoped behavioral contract for a dispatched model. Narrower than a personality — defines the model's job for this extension (GM for an RPG vault, analyst for a data vault, writing partner for a project vault). Defined per extension, not per model. | A persona. A role archetype is a work contract, not a character. |
