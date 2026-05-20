@@ -10,9 +10,19 @@
 
 LMF is growing toward multi-operator deployment: Tori onboarding Scribner, parallel vaults (RPG, data, project, let's play), and eventually community contribution via the Feature Manager. Each of these requires that new operators — technical and non-technical alike — can understand what the system is and how it relates to them, without Jared present to translate.
 
-Currently, component names are scattered across the Covenant, ADRs, the feature inventory, the architecture doc, and the seed schema. Some terms are precise (`operator`, `vault`). Others are implicit (`model`, `binding`, `personality`). Some don't exist yet (`frame`, `deployer` as distinct from `operator`). There is no single authoritative reference.
+Currently, component names are scattered across the Covenant, ADRs, the feature inventory, the architecture doc, and the seed schema. Some terms are precise (`operator`, `vault`). Others are implicit (`model`, `binding`, `personality`). Some don't exist yet (`frame`, `deployer` as distinct from `operator`, `dispatch`, `extension`). There is no single authoritative reference.
 
 This spec produces that reference, plus the first metaphor frame — the summons frame — as a complete translation layer over the vocabulary.
+
+### The instance / extension distinction
+
+This distinction is load-bearing and must be preserved throughout the vocabulary:
+
+**Instance** — a personal exobrain deployment. Full binding, full init, named assistant, full development care. Marlin is an instance. Scribner is an instance. Reserved for this tier. Not a project workspace.
+
+**Extension** — a vault the operator dispatches into from their home cockpit. Project vaults and knowledge vaults are extensions. They do not require full init, do not have a bound assistant, and do not carry the development weight of an instance. A colleague relationship is naturally expressed here — shared project vault, one or more operators dispatching into it.
+
+Extensions need solid enough grounding that non-builders can create vault-specific skills through conversation, without touching YAML. The Feature Manager offers bootstrapping options for extensions but imposes no required structure — templates are starting points, not mandates. Local inference is a first-class target for extension work.
 
 ---
 
@@ -78,6 +88,18 @@ Canonical agnostic reference for every named component in LMF. Operator-agnostic
 | `mode` | Operator-declared context state (`available`, `transit`, `deep-work`, etc.). Declared by the operator, never inferred by the system. Shapes which tasks surface and how the assistant responds. | Status. Mode is a declaration, not a signal the system reads from behavior. |
 | `surface` | The act of presenting one task or item to the operator at the right moment. The surfacing engine determines what surfaces and when, based on mode, context, and priority. One at a time. | Notification. Surfacing is considered — one item, chosen by the system, at the right moment. |
 
+**Extensions**
+
+| Term | Definition | Not |
+|---|---|---|
+| `extension` | A vault the operator dispatches into from their home cockpit. Lighter than an instance — no full binding, no named assistant, no init. Project vaults and knowledge vaults are extensions. | An instance. Extensions don't carry the operator's exobrain. They're workspaces. |
+| `home vault` | The operator's primary vault — where their cockpit lives, their assistant is bound, their exobrain resides. Marlin is Jared's home vault. | Any vault. An operator has one home vault. Extensions are visited from it. |
+| `project vault` | An extension scoped to a specific creative or operational project. Has a project index, a role archetype for dispatched models, and a CLAUDE.md defining vault-specific skills and grounding. May be shared with collaborators. Examples: RPG campaign, Let's Play series, data investigation. | An instance. A project vault doesn't need init or a bound assistant to be useful. |
+| `knowledge vault` | An extension holding curated reference or domain knowledge — publicly derived, not personal. May have its own skill set. May be managed on behalf of a beneficiary who isn't the primary operator. Athenaeum (Jaina's school vault) is a knowledge vault. | An exobrain. Knowledge vaults are reference material, not a second mind. |
+| `dispatch` | Sending a model into an extension's context from the home cockpit. The model receives grounding, a role archetype, and an entry point. Not a binding — the model isn't imprinted to the extension, just oriented in it. Task-scoped. | Binding. Dispatch is temporary and scoped; binding is persistent and relational. |
+| `grounding` | The minimal context package given to a dispatched model: who the operator is, what vault they're in, what the project index says, and the role archetype. Defined in the extension's CLAUDE.md. | A system prompt. Grounding is specific to this vault and this dispatch — not a generic instruction set. |
+| `role archetype` | The scoped behavioral contract for a dispatched model. Narrower than a personality — defines the model's job for this extension (GM for an RPG vault, analyst for a data vault, writing partner for a project vault). Defined per extension, not per model. | A persona. A role archetype is a work contract, not a character. |
+
 **Community**
 
 | Term | Definition | Not |
@@ -126,6 +148,13 @@ This is the reference frame: the one that shaped the LMF design philosophy most 
 | `stability tier` | field record |
 | `frame` | lens |
 | `instance` | bound circle |
+| `extension` | expedition site |
+| `home vault` | sanctum |
+| `project vault` | expedition grimoire |
+| `knowledge vault` | compendium |
+| `dispatch` | sending forth |
+| `grounding` | briefing the summon |
+| `role archetype` | the summon's commission |
 
 **The Philosophy**
 Three things the summons frame does that clinical language cannot:
@@ -158,4 +187,7 @@ This spec is the first deliverable of a broader effort to make LMF legible acros
 - Other frame documents (office, familiar, ghost) — stubs only; full frames are future work
 - Vault type taxonomy (what distinguishes a personal vault from a project vault from a reference vault) — feeds from this work but is its own spec
 - Music panel / ambient cockpit engagement — separate feature
-- Vault type taxonomy (naming distinction between personal exobrain vaults, publicly-derived knowledge vaults, and project vaults) — this question surfaced during design; it is downstream vocabulary work that depends on `spec/vocabulary.md` being stable first
+- Feature Manager commands for bootstrapping extensions (project vault init, knowledge vault init, conversational skill creator) — downstream; depends on vocabulary being stable
+- Local inference integration for extension work — downstream
+- Non-builder skill creation flow (conversational YAML generation) — downstream
+- Shared / collaborative extension access model — downstream
