@@ -39,6 +39,20 @@ spec/frames/familiar.md     ← stub (future)
 
 Frames reference vocabulary. Vocabulary never references frames. Adding a new frame is a new file — vocabulary is never modified.
 
+### Frame use is not exclusive
+
+Operators are not locked into a single frame. Mix and match is explicitly supported and encouraged — an operator might use "summon" for the model, their own word for the vault, and no frame language at all for trust tiers. When an operator names their own system, they own it. Ownership is the goal.
+
+The vocabulary is surfaced *before* any frame is offered:
+
+> "Here's what the system calls each piece. Some operators find it easier to think about through a particular lens — here are a few that others use. You can pick one as a starting point, borrow from several, or use your own words entirely. The vocabulary underneath is always there if you need it."
+
+Frame selection is an invitation, not a configuration step.
+
+### Contributing a frame is a first-class contribution
+
+A new frame is a markdown file in `spec/frames/`. It requires: a literacy note (who this frame is for and what prior knowledge it assumes), a complete translation table over the vocabulary, and a brief note on what the frame captures well and where it falls short. That's it. No code. Contributing a frame is one of the lowest-barrier upstream contributions in LMF — intentionally. See `CONTRIBUTING.md`.
+
 ---
 
 ## Document 1: `spec/vocabulary.md`
@@ -155,6 +169,10 @@ This is the reference frame: the one that shaped the LMF design philosophy most 
 | `dispatch` | sending forth |
 | `grounding` | briefing the summon |
 | `role archetype` | the summon's commission |
+
+**Captures well / falls short**
+- Captures: the unknown-origin danger register; the binding relationship as distinct from configuration; the named-creature quality of a bound assistant; the commission structure of domain experts and role archetypes
+- Falls short: the precise contractual nature of binding (office frame handles this better); the collaborative/collegial quality of shared extensions (neither summons nor office captures this naturally); the care relationship in a knowledge vault managed for a beneficiary
 
 **The Philosophy**
 Three things the summons frame does that clinical language cannot:
