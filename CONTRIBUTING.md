@@ -35,11 +35,16 @@ The system defaults to a randomized hash. You opt into visibility — it's never
 
 A frame is a metaphor set that translates LMF vocabulary into culturally familiar terms. Frames live in `spec/frames/` — one markdown file per frame.
 
-A valid frame document has three required sections:
+A valid frame document has four required sections, in this order:
 
 1. **Literacy note** — who this frame is for and what prior knowledge it assumes. Be explicit: if it requires gaming background, say so. Operators without that context should know to skip it.
-2. **Translation table** — a complete mapping from every term in `spec/vocabulary.md` to the frame's equivalent. Every term must have an entry. Use `—` if a term has no natural translation.
-3. **Captures well / falls short** — honest assessment of where the frame illuminates and where it misleads. No frame covers everything equally well.
+2. **What this frame captures** — what the frame does that plain vocabulary cannot. Name the design decisions the metaphor illuminates. This is the frame's justification, not a glossary.
+3. **What this frame falls short on** — honest assessment of where the frame misleads or leaves gaps. No frame covers everything equally well. Name the alternatives where they exist.
+4. **Translation table** — a complete mapping from every term in `spec/vocabulary.md` to the frame's equivalent. Every term must have an entry. Use `—` if a term has no natural translation.
+
+Two optional sections are common and encouraged:
+- **Where this frame surfaces** — specific moments in the system (init, CONTRIBUTING.md, domain expert introduction) where this frame's language is useful
+- **Mix and match** — explicit note that operators are not required to use the frame consistently
 
 Frame contributions are the lowest-barrier upstream contribution in LMF. No code. No schema. Just markdown and honest translation work.
 
