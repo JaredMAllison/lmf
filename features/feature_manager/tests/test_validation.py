@@ -196,3 +196,75 @@ def test_cmd_list_planned_visible(capsys):
     cmd_list({"status": "Planned"})
     captured = capsys.readouterr()
     assert "panel.rpg" in captured.out
+
+
+import json as _json
+
+
+def test_install_name_requires_name_or_manifest():
+    from features.feature_manager.manager import cmd_install
+    import pytest
+    with pytest.raises(SystemExit):
+        cmd_install({})
+
+
+def test_install_name_catalog_lookup_missing(capsys):
+    from features.feature_manager.manager import install_from_catalog
+    result = install_from_catalog("panel.doesnotexist", catalog=[])
+    assert result is False
+    captured = capsys.readouterr()
+    assert "not found" in captured.out
+
+
+def test_install_name_blocks_planned(capsys):
+    from features.feature_manager.manager import install_from_catalog
+    catalog = [{"name": "panel.rpg", "version": "0.1.0", "type": "panel",
+                "source": {"git": "https://example.com/rpg.git"}, "status": "Planned"}]
+    result = install_from_catalog("panel.rpg", catalog=catalog)
+    assert result is False
+    captured = capsys.readouterr()
+    assert "Planned" in captured.out
+
+
+def test_install_name_reads_lmf_manifest(tmp_path, monkeypatch):
+    from features.feature_manager.manager import install_from_catalog
+    manifest_content = {
+        "name": "panel.test",
+        "version": "1.0.0",
+        "type": "panel",
+        "install": [],
+        "health_endpoint": "/health"
+    }
+    (tmp_path / "lmf-manifest.json").write_text(_json.dumps(manifest_content))
+
+    catalog = [{
+        "name": "panel.test",
+        "version": "1.0.0",
+        "type": "panel",
+        "source": {"path": str(tmp_path)},
+        "trust_level": "Solo",
+        "status": "Experimental"
+    }]
+
+    lock_path = tmp_path / "lock.json"
+    monkeypatch.setenv("LMF_LOCK_FILE", str(lock_path))
+    result = install_from_catalog("panel.test", catalog=catalog)
+    assert result is True
+    data = _json.loads(lock_path.read_text())
+    assert data["version"] == 1
+    assert data["entries"][0]["name"] == "panel.test"
+
+
+def test_install_name_missing_manifest_errors(tmp_path, capsys):
+    from features.feature_manager.manager import install_from_catalog
+    catalog = [{
+        "name": "panel.test",
+        "version": "1.0.0",
+        "type": "panel",
+        "source": {"path": str(tmp_path)},
+        "status": "Experimental"
+    }]
+    result = install_from_catalog("panel.test", catalog=catalog)
+    assert result is False
+    captured = capsys.readouterr()
+    assert "lmf-manifest.json" in captured.out

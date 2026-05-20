@@ -174,7 +174,11 @@ def record_installed(manifest):
 def write_lock_file(manifest, lock_path=None):
     """Write an installed package entry to the persistent lock file (upsert by name)."""
     from datetime import datetime, timezone
-    path = Path(lock_path) if lock_path else LOCK_FILE
+    if lock_path:
+        path = Path(lock_path)
+    else:
+        env_lock = os.getenv("LMF_LOCK_FILE")
+        path = Path(env_lock) if env_lock else LOCK_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
 
     data = {"version": 1, "entries": []}
@@ -200,6 +204,43 @@ def write_lock_file(manifest, lock_path=None):
     entries.append(entry)
     data["entries"] = entries
     path.write_text(json.dumps(data, indent=2))
+
+
+LMF_MANIFEST_SCHEMA_PATH = Path(__file__).parent.parent / "schema" / "lmf-manifest.schema.json"
+
+
+def install_from_catalog(name, catalog=None):
+    """Look up a package in the catalog, fetch its lmf-manifest.json, install it."""
+    if catalog is None:
+        catalog = load_registry(PANELS_REGISTRY)
+
+    entry = next((e for e in catalog if e.get("name") == name), None)
+    if not entry:
+        print(f"Package '{name}' not found in catalog.")
+        return False
+
+    if entry.get("status") == "Planned":
+        print(f"Package '{name}' is Planned (not yet installable).")
+        return False
+
+    source = entry.get("source", {})
+    with tempfile.TemporaryDirectory() as tmp:
+        pkg_dir = Path(tmp) / name.replace(".", "-")
+        if not clone_source(source, pkg_dir):
+            return False
+
+        manifest_path = pkg_dir / "lmf-manifest.json"
+        if not manifest_path.exists():
+            print(f"No lmf-manifest.json found in '{name}' repo. The package must ship one.")
+            return False
+
+        manifest = json.loads(manifest_path.read_text())
+        lmf_schema = json.loads(LMF_MANIFEST_SCHEMA_PATH.read_text())
+        if not validate_manifest(manifest, lmf_schema):
+            print(f"lmf-manifest.json in '{name}' is invalid.")
+            return False
+
+        return install_single(manifest)
 
 
 def install_single(manifest):
@@ -245,9 +286,17 @@ def install_single(manifest):
 
 
 def cmd_install(args):
-    manifest_file = args.get("manifest_file") or args.get("profile")
+    name = args.get("name")
+    manifest_file = args.get("manifest") or args.get("profile")
+
+    if name:
+        catalog = load_registry(PANELS_REGISTRY)
+        if not install_from_catalog(name, catalog=catalog):
+            sys.exit(1)
+        return
+
     if not manifest_file:
-        print("Usage: manager.py install --manifest <file>")
+        print("Usage: manager.py install --name <package> | --manifest <file> | --profile <file>")
         sys.exit(1)
 
     with open(manifest_file) as f:
@@ -277,7 +326,7 @@ def cmd_install(args):
         else:
             failures.append(manifest.get("name", "unknown"))
 
-    print(f"\nResults: {successes} installed, {len(failures)} failed")
+    print(f"\nInstall complete: {successes} installed, {len(failures)} failed")
     if failures:
         print(f"Failed: {', '.join(failures)}")
         sys.exit(1)
@@ -482,8 +531,9 @@ def main():
         print("  validate              Validate all registry files against the schema")
         print("  list [--type <type>] [--status <status>]")
         print("                        List catalog entries")
-        print("  install --manifest <file> | --profile <file>")
-        print("                        Install a package manifest or seed profile")
+        print("  install --name <package>  Install a package from the catalog by name")
+        print("          --manifest <file> Install from a local manifest file")
+        print("          --profile <file>  Install all packages in a seed profile")
         print("  populate-panels       Resolve {{ENV_VAR}} placeholders in panels_config.json")
         print("  health-check --name <package> --url <health_endpoint>")
         print("                        Verify a service health endpoint is responding")
