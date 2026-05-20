@@ -147,6 +147,14 @@
       "stability": 0,
       "trust": 0,
       "description": "Safety, trustworthiness, peer support, empowerment guidance"
+    },
+    {
+      "id": "speckit",
+      "name": "Spec‑Driven Development",
+      "feature": "build",
+      "stability": 0,
+      "trust": 0,
+      "description": "Spec‑kit spec → plan → tasks → implement pipeline. Slash commands in Claude Code (/speckit-*) and OpenCode (/speckit.*), Summons tools (read_constitution, read_spec_template). Lives in the LMF repo at ~/git/lmf/."
     }
   ]
 }

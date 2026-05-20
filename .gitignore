@@ -1,10 +1,21 @@
-.opencode/
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Tool caches
 .claude/
+.opencode/
+.worktrees/
+.code-review-graph/
 .knowledge-loom-index/
 .obsidian/
-__pycache__/
-.pytest_cache/
-*.pyc
+
+# Instance-specific config (use config.yaml.example)
+stack/operator/config.yaml
 
 # LMF lock file (machine state — not committed)
 features/installed-lock.json
+
+# Ephemeral session artifacts
+docs/superpowers/plans/

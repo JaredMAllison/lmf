@@ -1,0 +1,13 @@
+{
+  "id": "speckit",
+  "name": "Spec-Driven Development",
+  "description": "GitHub Spec Kit integration for the LMF umbrella repo. Provides spec → plan → tasks → implement pipeline grounded in the LMF constitution. Available as slash commands in Claude Code (/speckit-*) and OpenCode (/speckit.*), and as orchestrator tools (read_constitution, read_spec_template) for Summons.",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [
+    "specify-cli"
+  ],
+  "user_agnostic": true,
+  "vault_agnostic": true,
+  "version": "1.0.0"
+}
