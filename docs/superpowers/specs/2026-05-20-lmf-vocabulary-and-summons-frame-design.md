@@ -1,0 +1,222 @@
+# LMF Vocabulary and Summons Frame — Design Spec
+
+**Date:** 2026-05-20
+**Status:** Approved
+**Produces:** `spec/vocabulary.md`, `spec/frames/summons.md`, `spec/frames/` directory
+
+---
+
+## Context
+
+LMF is growing toward multi-operator deployment: Tori onboarding Scribner, parallel vaults (RPG, data, project, let's play), and eventually community contribution via the Feature Manager. Each of these requires that new operators — technical and non-technical alike — can understand what the system is and how it relates to them, without Jared present to translate.
+
+Currently, component names are scattered across the Covenant, ADRs, the feature inventory, the architecture doc, and the seed schema. Some terms are precise (`operator`, `vault`). Others are implicit (`model`, `binding`, `personality`). Some don't exist yet (`frame`, `deployer` as distinct from `operator`, `dispatch`, `extension`). There is no single authoritative reference.
+
+This spec produces that reference, plus the first metaphor frame — the summons frame — as a complete translation layer over the vocabulary.
+
+### The instance / extension distinction
+
+This distinction is load-bearing and must be preserved throughout the vocabulary:
+
+**Instance** — a personal exobrain deployment. Full binding, full init, named assistant, full development care. Marlin is an instance. Scribner is an instance. Reserved for this tier. Not a project workspace.
+
+**Extension** — a vault the operator dispatches into from their home cockpit. Project vaults and knowledge vaults are extensions. They do not require full init, do not have a bound assistant, and do not carry the development weight of an instance. A colleague relationship is naturally expressed here — shared project vault, one or more operators dispatching into it.
+
+Extensions need solid enough grounding that non-builders can create vault-specific skills through conversation, without touching YAML. The Feature Manager offers bootstrapping options for extensions but imposes no required structure — templates are starting points, not mandates. Local inference is a first-class target for extension work.
+
+---
+
+## Architecture
+
+Two documents, explicit one-way dependency:
+
+```
+spec/vocabulary.md          ← stable parent; no knowledge of frames
+spec/frames/summons.md      ← child; imports vocabulary, provides translation
+spec/frames/office.md       ← stub (future)
+spec/frames/familiar.md     ← stub (future)
+```
+
+Frames reference vocabulary. Vocabulary never references frames. Adding a new frame is a new file — vocabulary is never modified.
+
+### Frame use is not exclusive
+
+Operators are not locked into a single frame. Mix and match is explicitly supported and encouraged — an operator might use "summon" for the model, their own word for the vault, and no frame language at all for trust tiers. When an operator names their own system, they own it. Ownership is the goal.
+
+The vocabulary is surfaced *before* any frame is offered:
+
+> "Here's what the system calls each piece. Some operators find it easier to think about through a particular lens — here are a few that others use. You can pick one as a starting point, borrow from several, or use your own words entirely. The vocabulary underneath is always there if you need it."
+
+Frame selection is an invitation, not a configuration step.
+
+### Contributing a frame is a first-class contribution
+
+A new frame is a markdown file in `spec/frames/`. It requires: a literacy note (who this frame is for and what prior knowledge it assumes), a complete translation table over the vocabulary, and a brief note on what the frame captures well and where it falls short. That's it. No code. Contributing a frame is one of the lowest-barrier upstream contributions in LMF — intentionally. See `CONTRIBUTING.md`.
+
+---
+
+## Document 1: `spec/vocabulary.md`
+
+### Purpose
+
+Canonical agnostic reference for every named component in LMF. Operator-agnostic, model-agnostic, metaphor-agnostic. Sits beside the Covenant as a sibling — not a replacement, an extension.
+
+### Structure
+
+**Preamble** — why this exists; relationship to Covenant; how frames use it.
+
+**People**
+
+| Term | Definition | Not |
+|---|---|---|
+| `operator` | The person the instance is built for and serves. Owns the vault, declares mode, controls the system. | A user. Not a customer. Not a client. |
+| `deployer` | The person who sets up the instance. May be the operator themselves, or a trusted person bootstrapping it on their behalf (e.g. Jared setting up Tori's Scribner instance). | Always the operator. The deployer may step back once init completes. |
+
+**The System**
+
+| Term | Definition | Not |
+|---|---|---|
+| `vault` | The persistent flat-file knowledge base. The operator's second mind. Owned entirely by the operator, stored locally. | A database. Not a cloud service. Not managed by anyone other than the operator. |
+| `instance` | A deployed LMF system configured for a specific operator. Each instance has a vault, a personality, a named assistant, and a set of features. Marlin is an instance. Scribner is an instance. | LMF itself. LMF is the architecture; instances are expressions of it. |
+| `cockpit` | The unified frontend where panels live. The operator's primary interface to the running system. | A dashboard. Not a portal. Not an app in the conventional sense — the cockpit is the floor. |
+| `profile` | The structured cognitive self-model (`LOCAL_MIND_FOUNDATION.md`). Machine-readable frontmatter describing the operator's neurology, needs, and active features. The system draws from this continuously. | A settings file. Not a configuration form. The profile grows through conversation and review. |
+
+**The AI Layer**
+
+| Term | Definition | Not |
+|---|---|---|
+| `model` | The raw inference backend — the LLM before any vault binding. Claude, Groq, Ollama, OpenCode. Unknown internal mechanics. Stochastic. Capable of unexpected behavior. | The assistant. The model becomes an assistant only after binding. |
+| `binding` | The act of connecting a model to a vault and personality to produce an assistant. Init performs the first binding. The binding defines the assistant's behavioral contract for this instance. | Configuration. Binding is a relationship, not a settings file. |
+| `personality` | The operator-defined behavioral contract that shapes how the model responds within this instance. Drawn from the profile, the vault context, skills, and memory. What makes this assistant distinct from a blank model. | A persona. Not a costume. Personality is the accumulated contract, not a style setting. |
+| `assistant` | The model after binding — the named AI collaborator for a specific instance. `<Name> von <Instance>` (e.g. Ariel von Marlin). Has a personality, can invoke skills, operates within write gate constraints. | A chatbot. Not a product. The assistant is a relationship. |
+| `assistant` | The model after binding — the named AI collaborator for a specific instance. `<Name> von <Instance>` (e.g. Ariel von Marlin). Has a personality, can invoke skills, operates within write gate constraints. | A chatbot. Not a product. The assistant is a relationship. |
+| `orchestrator` | The runtime that makes the binding operational. Routes the operator's intent to the right model or domain expert, loads vault context, invokes skills, and enforces the write gate. The machinery that turns model + vault + personality into a working assistant. | The assistant. The orchestrator is what the assistant runs on — the operator experiences the assistant, not the orchestrator. |
+| `domain expert` | A sub-assistant with a narrower personality scoped to a specific domain (scheduling, coaching, writing). Same model class as the assistant; different imprinting. Invoked by the orchestrator when the operator's intent matches the domain. | A plugin. Not a separate AI. A domain expert is a constrained expression of the same underlying model. |
+
+**Features**
+
+| Term | Definition | Not |
+|---|---|---|
+| `skill` | A named behavioral pattern the assistant can invoke. Defined in plain language; executable by any model that can follow instructions. | Code. Not a function call. Skills are readable by the operator, not just the runtime. |
+| `panel` | A cockpit UI component serving a specific cognitive function. Declares its valid sizes, trust tier, and stability tier. | A widget. A panel has semantic meaning — it fills a specific cognitive gap declared in its identity fields. |
+| `init` | The first-time setup and operator onboarding process for an instance. Conversational by design. Produces the profile, establishes the binding, introduces the assistant. Consent-first; never mandatory. | Installation. Init is a relationship-forming process, not a configuration wizard. |
+| `write gate` | The permission layer controlling what the assistant can modify in the vault and system. Prevents a model from writing to the operator's exobrain without explicit consent or prior authorization. | A safety feature. The write gate is the contract boundary — what the assistant is authorized to touch. |
+| `mode` | Operator-declared context state (`available`, `transit`, `deep-work`, etc.). Declared by the operator, never inferred by the system. Shapes which tasks surface and how the assistant responds. | Status. Mode is a declaration, not a signal the system reads from behavior. |
+| `surface` | The act of presenting one task or item to the operator at the right moment. The surfacing engine determines what surfaces and when, based on mode, context, and priority. One at a time. | Notification. Surfacing is considered — one item, chosen by the system, at the right moment. |
+
+**Extensions**
+
+| Term | Definition | Not |
+|---|---|---|
+| `extension` | A vault the operator dispatches into from their home cockpit. Lighter than an instance — no full binding, no named assistant, no init. Project vaults and knowledge vaults are extensions. | An instance. Extensions don't carry the operator's exobrain. They're workspaces. |
+| `home vault` | The operator's primary vault — where their cockpit lives, their assistant is bound, their exobrain resides. Marlin is Jared's home vault. | Any vault. An operator has one home vault. Extensions are visited from it. |
+| `project vault` | An extension scoped to a specific creative or operational project. Has a project index, a role archetype for dispatched models, and a CLAUDE.md defining vault-specific skills and grounding. May be shared with collaborators. Examples: RPG campaign, Let's Play series, data investigation. | An instance. A project vault doesn't need init or a bound assistant to be useful. |
+| `knowledge vault` | An extension holding curated reference or domain knowledge — publicly derived, not personal. May have its own skill set. May be managed on behalf of a beneficiary who isn't the primary operator. Athenaeum (Jaina's school vault) is a knowledge vault. | An exobrain. Knowledge vaults are reference material, not a second mind. |
+| `dispatch` | Sending a model into an extension's context from the home cockpit. The model receives grounding, a role archetype, and an entry point. Not a binding — the model isn't imprinted to the extension, just oriented in it. Task-scoped. | Binding. Dispatch is temporary and scoped; binding is persistent and relational. |
+| `grounding` | The minimal context package given to a dispatched model: who the operator is, what vault they're in, what the project index says, and the role archetype. Defined in the extension's CLAUDE.md. | A system prompt. Grounding is specific to this vault and this dispatch — not a generic instruction set. |
+| `role archetype` | The scoped behavioral contract for a dispatched model. Narrower than a personality — defines the model's job for this extension (GM for an RPG vault, analyst for a data vault, writing partner for a project vault). Defined per extension, not per model. | A persona. A role archetype is a work contract, not a character. |
+
+**Grounding Infrastructure**
+
+| Term | Definition | Not |
+|---|---|---|
+| `VAULT.md` | The agnostic grounding file at the root of any vault — home vault or extension. Defines what this vault is, the operator's frame preference and vocabulary, and the role archetype for dispatched models. Model-agnostic: any model can read it. Source of truth from which vendor-specific files are derived. | A replacement for `LOCAL_MIND_FOUNDATION.md`. The profile is the operator's cognitive self-model; `VAULT.md` is the vault's grounding context. |
+| `vendor adapter` | A vendor-specific file or runtime injection mechanism that delivers the agnostic grounding to a particular model. `CLAUDE.md` is a vendor adapter for Claude Code. `opencode.md` for OpenCode. `AGENTS.md` for agent frameworks. API system prompts for Groq and direct-API vendors. Derived from `VAULT.md` — generated by the Feature Manager for file-based vendors, assembled at runtime by the orchestrator for API vendors. | The grounding itself. The adapter is the delivery mechanism; `VAULT.md` is the content. |
+
+**Community**
+
+| Term | Definition | Not |
+|---|---|---|
+| `trust tier` | Community adoption weight for a feature. Solo (author only) → Vouched (≥2 operators, ≥1 review) → Validated (≥3 operators, ≥2 reviews). Tracks real-world deployment, not theoretical quality. | A rating. Trust tiers are evidence-based, not opinion-based. |
+| `stability tier` | Technical maturity of a feature. Experimental → Tested → Stable. Profile-specific: a feature may be Stable for one neurological profile and Experimental for another. | A version number. Stability tracks behavioral fitness across profiles, not code quality alone. |
+| `frame` | A metaphor set that translates agnostic vocabulary into culturally familiar terms. Operators choose a frame that fits their existing mental model. The frame is a lens — the vocabulary underneath is unchanged. | The vocabulary itself. A frame is one reading of the system; the vocabulary is what the system actually is. |
+
+---
+
+## Document 2: `spec/frames/summons.md`
+
+### Purpose
+
+The summons frame translates LMF vocabulary into terms drawn from RPG and fantasy literature. Intended for operators with gaming or speculative fiction background. Requires that cultural context — without it, the frame is noise, not signal.
+
+This is the reference frame: the one that shaped the LMF design philosophy most directly. Other frames are translations of the same vocabulary; this one influenced the vocabulary's shape.
+
+### Structure
+
+**Preamble**
+- Who this frame is for (RPG/fantasy-literate operators)
+- What it captures that other frames don't: the unknown-origin danger register — "powerful creatures of unknown origin, experiment at your peril"
+- What it does not capture: the precise contractual nature of binding (the office frame handles this better)
+
+**Translation Table**
+
+| Vocabulary term | Summons term |
+|---|---|
+| `model` | raw summon |
+| `binding` | binding ritual |
+| `orchestrator` | the ritual vessel |
+| `assistant` | bound summon |
+| unbound model (pre-init) | blank summon |
+| `personality` | imprinting |
+| `vault` | grimoire |
+| `profile` | the operator's sigil |
+| `init` | the summoning ritual |
+| `operator` | summoner |
+| `deployer` | first summoner |
+| `domain expert` | specialized summon |
+| `skill` | invocation |
+| `cockpit` | summoning chamber |
+| `write gate` | binding contract |
+| `mode` | the summoner's declared state |
+| `trust tier` | vouching record |
+| `stability tier` | field record |
+| `frame` | lens |
+| `instance` | bound circle |
+| `extension` | expedition site |
+| `home vault` | sanctum |
+| `project vault` | expedition grimoire |
+| `knowledge vault` | compendium |
+| `dispatch` | sending forth |
+| `grounding` | briefing the summon |
+| `role archetype` | the summon's commission |
+
+**Captures well / falls short**
+- Captures: the unknown-origin danger register; the binding relationship as distinct from configuration; the named-creature quality of a bound assistant; the commission structure of domain experts and role archetypes
+- Falls short: the precise contractual nature of binding (office frame handles this better); the collaborative/collegial quality of shared extensions (neither summons nor office captures this naturally); the care relationship in a knowledge vault managed for a beneficiary
+
+**The Philosophy**
+Three things the summons frame does that clinical language cannot:
+1. Names the danger correctly — you do not know how a model works internally. It is not a calculator. It is stochastic, capable of unexpected output, and shaped by training you didn't control. "Experiment at your peril" is honest.
+2. Justifies the architecture — the write gate is not paranoia; it is what any sensible summoner does before letting an unknown creature write in their grimoire. Operator-declared mode is not a design quirk; the summoner must declare their state because the summon cannot reliably read it. Trust tiers exist because you want to know how many summoners have worked with this creature and what happened.
+3. Names the relationship — `Ariel von Marlin` is not a product name. It is a bound summon's name. The `von` is a binding word. The instance name says where the creature is contracted to.
+
+**Where It Surfaces**
+- Init: the first explanation of what is about to happen, if the operator has RPG/fantasy context
+- CONTRIBUTING.md: framing for contributors submitting a new panel or skill ("you are adding a new summon type to the grimoire")
+- Domain experts introduction: "you are narrowing a summon's contract to a specific domain"
+- Trust tier documentation: "a Solo summon has been worked with by one summoner only"
+
+---
+
+## Relationship to the Systemic Legibility Initiative
+
+This spec is the first deliverable of a broader effort to make LMF legible across operator types:
+
+- **Tori / Scribner onboarding** — Tori is a writer, not a technical operator. The vocabulary gives the deployer (Jared) precise terms; the frame gives Tori a legible entry point.
+- **Parallel vaults** — RPG vaults, data vaults, project vaults, let's play vaults all become LMF instances once the vocabulary is precise enough to name what they have in common and where they differ. (Vault type taxonomy is a downstream deliverable from this work.)
+- **Feature Manager deployment** — the vocabulary makes install manifests legible: a `domain expert` manifest is distinct from a `skill` manifest is distinct from a `panel` manifest because those terms now have precise definitions.
+- **Community contribution** — the CONTRIBUTING.md becomes coherent once the vocabulary is stable. Contributors know what they're contributing.
+
+---
+
+## Out of Scope
+
+- The metaphor selector feature (which frame to offer which operator) — downstream
+- Other frame documents (office, familiar, ghost) — stubs only; full frames are future work
+- Vault type taxonomy (what distinguishes a personal vault from a project vault from a reference vault) — feeds from this work but is its own spec
+- Music panel / ambient cockpit engagement — separate feature
+- Feature Manager commands for bootstrapping extensions (project vault init, knowledge vault init, conversational skill creator) — downstream; depends on vocabulary being stable
+- Local inference integration for extension work — downstream
+- Non-builder skill creation flow (conversational YAML generation) — downstream
+- Shared / collaborative extension access model — downstream
+- Vendor adapter layer — `VAULT.md` (agnostic grounding source) derives into vendor-specific files (`CLAUDE.md`, `opencode.md`, `AGENTS.md`, `GEMINI.md`) and runtime system prompts (Groq, direct API). File-based vendors: generated by Feature Manager. API-only vendors: runtime injection by orchestrator. Currently maintained manually and drifts — this is the known problem the adapter layer solves. Requires `VAULT.md` convention to be stable first.
