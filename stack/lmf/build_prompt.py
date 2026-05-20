@@ -73,7 +73,7 @@ def _parse_frontmatter_field(text: str, field: str) -> str:
     Handles inline values and block scalars (|, >, |-) by returning
     the first non-empty content line for block types.
     """
-    match = re.search(rf'^{field}:\s*(.+)$', text, re.MULTILINE)
+    match = re.search(rf'^{field}:[ \t]*(.*?)$', text, re.MULTILINE)
     if not match:
         return ""
     value = match.group(1).strip().strip('"')
