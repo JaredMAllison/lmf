@@ -56,3 +56,16 @@ Extensions are vaults the operator dispatches into from their home cockpit. They
 | `dispatch` | Sending a model into an extension's context from the home cockpit. The model receives grounding, a role archetype, and an entry point. Not a binding — the model is oriented in the extension, not imprinted to it. Task-scoped. | Binding. Dispatch is temporary and scoped; binding is persistent and relational. |
 | `grounding` | The minimal context package given to a dispatched model: who the operator is, what vault they're in, what the project index says, and the role archetype. Defined in the extension's `VAULT.md`. | A system prompt. Grounding is specific to this vault and this dispatch, not a generic instruction set. |
 | `role archetype` | The scoped behavioral contract for a dispatched model. Narrower than a personality — defines the model's job for this extension (GM for an RPG vault, analyst for a data vault, writing partner for a project vault). Defined per extension, not per model. | A persona. A role archetype is a work contract, not a character. |
+
+---
+
+## Features
+
+| Term | Definition | Not |
+|---|---|---|
+| `skill` | A named behavioral pattern the assistant can invoke. Defined in plain language; executable by any model that can follow instructions. | Code. Not a function call. Skills are readable by the operator, not just the runtime. |
+| `panel` | A cockpit UI component serving a specific cognitive function. Declares its valid sizes, trust tier, and stability tier. | A widget. A panel has semantic meaning — it fills a specific cognitive gap declared in its identity fields. |
+| `init` | The first-time setup and operator onboarding process for an instance. Conversational by design. Produces the profile, establishes the binding, introduces the assistant. Consent-first; defers are first-class. | Installation. Init is a relationship-forming process, not a configuration wizard. |
+| `write gate` | The permission layer controlling what the assistant can modify in the vault and system. The assistant cannot write to the operator's exobrain without explicit consent or prior authorization. | A safety feature. The write gate is the contract boundary — what the assistant is authorized to touch. |
+| `mode` | Operator-declared context state (`available`, `transit`, `deep-work`, etc.). Declared by the operator, never inferred by the system. Shapes which tasks surface and how the assistant responds. | Status. Mode is a declaration, not a signal the system reads from behavior. |
+| `surface` | The act of presenting one task or item to the operator at the right moment. The surfacing engine determines what surfaces and when, based on mode, context, and priority. One at a time. | Notification. Surfacing is considered — one item, chosen by the system, at the right moment. |
