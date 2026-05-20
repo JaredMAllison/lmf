@@ -168,3 +168,31 @@ def test_write_lock_file_omits_null_fields():
         entry = data["entries"][0]
         assert "panel_entry" not in entry
         assert "health_endpoint" not in entry
+
+
+def test_cmd_list_returns_all(capsys):
+    from features.feature_manager.manager import cmd_list
+    cmd_list({})
+    captured = capsys.readouterr()
+    assert "panel.marlin" in captured.out
+
+
+def test_cmd_list_filters_by_type(capsys):
+    from features.feature_manager.manager import cmd_list
+    cmd_list({"type": "panel"})
+    captured = capsys.readouterr()
+    assert "panel" in captured.out
+
+
+def test_cmd_list_filters_by_status(capsys):
+    from features.feature_manager.manager import cmd_list
+    cmd_list({"status": "Experimental"})
+    captured = capsys.readouterr()
+    assert "Experimental" in captured.out
+
+
+def test_cmd_list_planned_visible(capsys):
+    from features.feature_manager.manager import cmd_list
+    cmd_list({"status": "Planned"})
+    captured = capsys.readouterr()
+    assert "panel.rpg" in captured.out

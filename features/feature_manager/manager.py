@@ -79,6 +79,40 @@ def cmd_validate(args):
         sys.exit(1)
 
 
+def cmd_list(args):
+    """List catalog entries with optional --type and --status filters."""
+    type_filter = args.get("type")
+    status_filter = args.get("status")
+
+    try:
+        entries = load_registry(PANELS_REGISTRY)
+    except FileNotFoundError:
+        print(f"Catalog not found: {PANELS_REGISTRY}")
+        sys.exit(1)
+
+    if type_filter:
+        entries = [e for e in entries if e.get("type") == type_filter]
+    if status_filter:
+        entries = [e for e in entries if e.get("status") == status_filter]
+
+    if not entries:
+        print("No packages match.")
+        return
+
+    col_w = {"name": 30, "type": 8, "trust": 10, "status": 12}
+    header = f"{'Name':<{col_w['name']}} {'Type':<{col_w['type']}} {'Trust':<{col_w['trust']}} {'Status':<{col_w['status']}} Description"
+    print(header)
+    print("-" * (len(header) + 20))
+    for e in entries:
+        print(
+            f"{e.get('name',''):<{col_w['name']}} "
+            f"{e.get('type',''):<{col_w['type']}} "
+            f"{e.get('trust_level',''):<{col_w['trust']}} "
+            f"{e.get('status',''):<{col_w['status']}} "
+            f"{e.get('description','')[:60]}"
+        )
+
+
 def resolve_placeholders(text):
     """Replace {{NAME}} placeholders with environment variable values."""
     import re
@@ -446,6 +480,8 @@ def main():
         print("Usage: manager.py <command> [args...]")
         print("Commands:")
         print("  validate              Validate all registry files against the schema")
+        print("  list [--type <type>] [--status <status>]")
+        print("                        List catalog entries")
         print("  install --manifest <file> | --profile <file>")
         print("                        Install a package manifest or seed profile")
         print("  populate-panels       Resolve {{ENV_VAR}} placeholders in panels_config.json")
@@ -465,6 +501,8 @@ def main():
 
     if cmd == "validate":
         cmd_validate(args)
+    elif cmd == "list":
+        cmd_list(args)
     elif cmd == "install":
         cmd_install(args)
     elif cmd == "populate-panels":
