@@ -69,3 +69,24 @@ Extensions are vaults the operator dispatches into from their home cockpit. They
 | `write gate` | The permission layer controlling what the assistant can modify in the vault and system. The assistant cannot write to the operator's exobrain without explicit consent or prior authorization. | A safety feature. The write gate is the contract boundary — what the assistant is authorized to touch. |
 | `mode` | Operator-declared context state (`available`, `transit`, `deep-work`, etc.). Declared by the operator, never inferred by the system. Shapes which tasks surface and how the assistant responds. | Status. Mode is a declaration, not a signal the system reads from behavior. |
 | `surface` | The act of presenting one task or item to the operator at the right moment. The surfacing engine determines what surfaces and when, based on mode, context, and priority. One at a time. | Notification. Surfacing is considered — one item, chosen by the system, at the right moment. |
+
+---
+
+## Grounding Infrastructure
+
+`VAULT.md` and the vendor adapter layer are named here as vocabulary terms. Their implementation — how `VAULT.md` is structured, how adapters are generated — is a downstream deliverable. These terms exist now because the vocabulary must name what the system intends, even before the implementation exists.
+
+| Term | Definition | Not |
+|---|---|---|
+| `VAULT.md` | The agnostic grounding file at the root of any vault — home vault or extension. Defines what the vault is, the operator's frame preference, and the role archetype for dispatched models. Model-agnostic: any model can read it. The source of truth from which vendor-specific adapter files are derived. | A replacement for `LOCAL_MIND_FOUNDATION.md`. The profile is the operator's cognitive self-model; `VAULT.md` is the vault's grounding context for dispatched models. |
+| `vendor adapter` | A vendor-specific file or runtime mechanism that delivers agnostic grounding to a particular model. `CLAUDE.md` is a vendor adapter for Claude Code. `opencode.md` for OpenCode. `AGENTS.md` for agent frameworks. API system prompts for Groq and direct-API vendors. Derived from `VAULT.md`. | The grounding itself. The adapter is the delivery mechanism; `VAULT.md` is the content. |
+
+---
+
+## Community
+
+| Term | Definition | Not |
+|---|---|---|
+| `trust tier` | Community adoption weight for a feature. Solo (author only) → Vouched (≥2 operators, ≥1 review) → Validated (≥3 operators, ≥2 reviews). Tracks real-world deployment, not theoretical quality. | A rating. Trust tiers are evidence-based, not opinion-based. |
+| `stability tier` | Technical maturity of a feature. Experimental → Tested → Stable. Profile-specific: a feature may be Stable for one neurological profile and Experimental for another. | A version number. Stability tracks behavioral fitness across profiles, not code quality alone. |
+| `frame` | A metaphor set that translates agnostic vocabulary into culturally familiar terms. Operators may use one frame, borrow from several, or use their own words. The frame is a lens — the vocabulary underneath is unchanged. | The vocabulary itself. A frame is one reading of the system; the vocabulary is what the system actually is. |
