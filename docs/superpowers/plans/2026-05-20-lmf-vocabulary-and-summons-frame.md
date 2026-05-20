@@ -127,12 +127,13 @@ Append to `~/git/lmf/spec/vocabulary.md`:
 | `binding` | The act of connecting a model to a vault and personality to produce an assistant. Init performs the first binding. The binding defines the assistant's behavioral contract for this instance. | Configuration. Binding is a relationship, not a settings file. |
 | `personality` | The operator-defined behavioral contract that shapes how the model responds within this instance. Drawn from the profile, the vault context, skills, and memory. What makes this assistant distinct from a blank model. | A persona. Not a costume. Personality is the accumulated contract, not a style setting. |
 | `assistant` | The model after binding — the named AI collaborator for a specific instance. Named as `<Name> von <Instance>` (e.g. Ariel von Marlin). Has a personality, can invoke skills, operates within write gate constraints. | A chatbot. Not a product. The assistant is a relationship. |
+| `orchestrator` | The runtime that makes the binding operational. Routes the operator's intent to the right model or domain expert, loads vault context, invokes skills, and enforces the write gate. The machinery that turns model + vault + personality into a working assistant. | The assistant. The orchestrator is what the assistant runs on — the operator experiences the assistant, not the orchestrator. |
 | `domain expert` | A sub-assistant with a narrower personality scoped to a specific domain (scheduling, coaching, writing). Same model class as the assistant; different imprinting. Invoked by the orchestrator when the operator's intent matches the domain. | A plugin. Not a separate AI. A domain expert is a constrained expression of the same underlying model. |
 ```
 
-- [ ] **Step 2: Verify all 5 AI Layer terms present**
+- [ ] **Step 2: Verify all 6 AI Layer terms present**
 
-Confirm: model, binding, personality, assistant, domain expert — each with definition and "not" column.
+Confirm: model, binding, personality, assistant, orchestrator, domain expert — each with definition and "not" column.
 
 - [ ] **Step 3: Commit**
 
@@ -337,6 +338,7 @@ Use these as signals that another frame or plain vocabulary may serve better for
 | `profile` | the summoner's sigil |
 | `model` | raw summon |
 | `binding` | binding ritual |
+| `orchestrator` | the ritual vessel |
 | `personality` | imprinting |
 | `assistant` | bound summon |
 | `domain expert` | specialized summon |

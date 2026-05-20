@@ -89,6 +89,8 @@ Canonical agnostic reference for every named component in LMF. Operator-agnostic
 | `binding` | The act of connecting a model to a vault and personality to produce an assistant. Init performs the first binding. The binding defines the assistant's behavioral contract for this instance. | Configuration. Binding is a relationship, not a settings file. |
 | `personality` | The operator-defined behavioral contract that shapes how the model responds within this instance. Drawn from the profile, the vault context, skills, and memory. What makes this assistant distinct from a blank model. | A persona. Not a costume. Personality is the accumulated contract, not a style setting. |
 | `assistant` | The model after binding — the named AI collaborator for a specific instance. `<Name> von <Instance>` (e.g. Ariel von Marlin). Has a personality, can invoke skills, operates within write gate constraints. | A chatbot. Not a product. The assistant is a relationship. |
+| `assistant` | The model after binding — the named AI collaborator for a specific instance. `<Name> von <Instance>` (e.g. Ariel von Marlin). Has a personality, can invoke skills, operates within write gate constraints. | A chatbot. Not a product. The assistant is a relationship. |
+| `orchestrator` | The runtime that makes the binding operational. Routes the operator's intent to the right model or domain expert, loads vault context, invokes skills, and enforces the write gate. The machinery that turns model + vault + personality into a working assistant. | The assistant. The orchestrator is what the assistant runs on — the operator experiences the assistant, not the orchestrator. |
 | `domain expert` | A sub-assistant with a narrower personality scoped to a specific domain (scheduling, coaching, writing). Same model class as the assistant; different imprinting. Invoked by the orchestrator when the operator's intent matches the domain. | A plugin. Not a separate AI. A domain expert is a constrained expression of the same underlying model. |
 
 **Features**
@@ -152,6 +154,7 @@ This is the reference frame: the one that shaped the LMF design philosophy most 
 |---|---|
 | `model` | raw summon |
 | `binding` | binding ritual |
+| `orchestrator` | the ritual vessel |
 | `assistant` | bound summon |
 | unbound model (pre-init) | blank summon |
 | `personality` | imprinting |
