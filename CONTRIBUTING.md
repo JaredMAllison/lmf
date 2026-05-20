@@ -31,6 +31,20 @@ The system defaults to a randomized hash. You opt into visibility — it's never
 - A panel must implement the panel interface (see `features/panels/SPEC.md` — coming)
 - Include a brief description of what cognitive gap it fills
 
+### Frame Contributions
+
+A frame is a metaphor set that translates LMF vocabulary into culturally familiar terms. Frames live in `spec/frames/` — one markdown file per frame.
+
+A valid frame document has three required sections:
+
+1. **Literacy note** — who this frame is for and what prior knowledge it assumes. Be explicit: if it requires gaming background, say so. Operators without that context should know to skip it.
+2. **Translation table** — a complete mapping from every term in `spec/vocabulary.md` to the frame's equivalent. Every term must have an entry. Use `—` if a term has no natural translation.
+3. **Captures well / falls short** — honest assessment of where the frame illuminates and where it misleads. No frame covers everything equally well.
+
+Frame contributions are the lowest-barrier upstream contribution in LMF. No code. No schema. Just markdown and honest translation work.
+
+See `spec/vocabulary.md` for the full term list. See `spec/frames/summons.md` for a complete example.
+
 ### Documentation
 - Architecture docs live in `spec/`
 - Schemas live in `profile/`
