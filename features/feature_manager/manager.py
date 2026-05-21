@@ -472,6 +472,62 @@ def cmd_update(args):
         sys.exit(1)
 
 
+def cmd_install_from_lock(args):
+    """Reinstall all packages from the lock file. Recovery command."""
+    lock_path = Path(args.get("lock") or LOCK_FILE)
+    if not lock_path.exists():
+        print(f"Lock file not found: {lock_path}")
+        sys.exit(1)
+
+    try:
+        data = json.loads(lock_path.read_text())
+    except json.JSONDecodeError:
+        print(f"Lock file is not valid JSON: {lock_path}")
+        sys.exit(1)
+
+    entries = data.get("entries", [])
+    if not entries:
+        print("Lock file is empty. Nothing to install.")
+        return
+
+    print(f"Installing {len(entries)} package(s) from lock file...")
+    successes = 0
+    failures = []
+
+    for entry in entries:
+        name = entry.get("name", "unknown")
+        source = entry.get("source", {})
+
+        with tempfile.TemporaryDirectory() as tmp:
+            pkg_dir = Path(tmp) / name.replace(".", "-")
+            if not clone_source(source, pkg_dir):
+                failures.append(name)
+                continue
+
+            manifest_path = pkg_dir / "lmf-manifest.json"
+            if not manifest_path.exists():
+                print(f"  No lmf-manifest.json found in '{name}'. Skipping.")
+                failures.append(name)
+                continue
+
+            manifest = json.loads(manifest_path.read_text())
+            lmf_schema = json.loads(LMF_MANIFEST_SCHEMA_PATH.read_text())
+            if not validate_manifest(manifest, lmf_schema):
+                print(f"  Invalid manifest for '{name}'. Skipping.")
+                failures.append(name)
+                continue
+
+            if install_single(manifest):
+                successes += 1
+            else:
+                failures.append(name)
+
+    print(f"\nRecovery install: {successes} installed, {len(failures)} failed")
+    if failures:
+        print(f"Failed: {', '.join(failures)}")
+        sys.exit(1)
+
+
 def cmd_populate_panels(args):
     cfg_path = args.get("config") or "public/panels_config.json"
     try:
@@ -545,6 +601,8 @@ def main():
         print("  populate-panels       Resolve {{ENV_VAR}} placeholders in panels_config.json")
         print("  health-check --name <package> --url <health_endpoint>")
         print("                        Verify a service health endpoint is responding")
+        print("  install-from-lock [--lock <file>]")
+        print("                        Reinstall all packages from lock file (recovery)")
         print("  init                  Run the interactive init wizard to create a seed profile")
         print("  update [--name <package>]")
         print("                        Update all installed packages (or a specific one)")
@@ -567,6 +625,8 @@ def main():
         cmd_populate_panels(args)
     elif cmd == "health-check":
         cmd_health_check_wrapper(args)
+    elif cmd == "install-from-lock":
+        cmd_install_from_lock(args)
     elif cmd == "init":
         from .init_wizard import run_wizard
         run_wizard(args.get("output"))
