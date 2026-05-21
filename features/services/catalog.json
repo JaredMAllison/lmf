@@ -1,0 +1,49 @@
+[
+  {
+    "name": "service.knowledge-loom",
+    "version": "0.1.0",
+    "type": "service",
+    "description": "Local vault search and grounding engine — BM25, semantic, and graph search over Markdown via MCP",
+    "source": { "git": "https://github.com/odinkirk/knowledge-loom" },
+    "install": [
+      "cargo build --release",
+      "cp target/release/loom {{VAULT_PATH}}/.knowledge-loom/bin/loom",
+      "KB_ROOT={{VAULT_PATH}} .knowledge-loom/bin/loom init --platform claude"
+    ],
+    "dependencies": [],
+    "health_endpoint": "loom index-status",
+    "trust_level": "Vouched",
+    "status": "Experimental",
+    "maintainer": {
+      "name": "Fritz",
+      "github": "odinkirk"
+    },
+    "mcp_tools": [
+      "loom_search",
+      "loom_search_file",
+      "loom_search_graph",
+      "loom_rank_notes",
+      "loom_find_connections",
+      "loom_find_path_between",
+      "loom_detect_themes",
+      "loom_list_files",
+      "loom_outline",
+      "loom_grep",
+      "loom_read_section",
+      "loom_read_lines",
+      "loom_replace_lines",
+      "loom_insert_after_heading",
+      "loom_append_to_file",
+      "loom_create_note",
+      "loom_edit_note",
+      "loom_link_notes",
+      "loom_move_note",
+      "loom_delete_note",
+      "loom_apply_edit_preview",
+      "loom_reindex",
+      "loom_index_status"
+    ],
+    "required_for": ["vault-aware"],
+    "tags": ["grounding", "search", "mcp", "infrastructure", "core"]
+  }
+]
