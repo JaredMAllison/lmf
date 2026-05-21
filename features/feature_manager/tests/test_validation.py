@@ -268,3 +268,104 @@ def test_install_name_missing_manifest_errors(tmp_path, capsys):
     assert result is False
     captured = capsys.readouterr()
     assert "lmf-manifest.json" in captured.out
+
+
+# --- install_from_lock ---
+
+def test_install_from_lock_empty_file(tmp_path, capsys):
+    from features.feature_manager.manager import cmd_install_from_lock
+    lock = tmp_path / "lock.json"
+    lock.write_text('{"version": 1, "entries": []}')
+    cmd_install_from_lock({"lock": str(lock)})
+    captured = capsys.readouterr()
+    assert "empty" in captured.out.lower()
+
+
+def test_install_from_lock_missing_file(tmp_path, capsys):
+    from features.feature_manager.manager import cmd_install_from_lock
+    import pytest
+    with pytest.raises(SystemExit):
+        cmd_install_from_lock({"lock": str(tmp_path / "nonexistent.json")})
+
+
+def test_install_from_lock_installs_entry(tmp_path, monkeypatch):
+    from features.feature_manager.manager import cmd_install_from_lock
+    import json
+
+    pkg_dir = tmp_path / "mypkg"
+    pkg_dir.mkdir()
+    manifest = {
+        "name": "panel.test",
+        "version": "1.0.0",
+        "type": "panel",
+        "install": [],
+    }
+    (pkg_dir / "lmf-manifest.json").write_text(json.dumps(manifest))
+
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_text(json.dumps({
+        "version": 1,
+        "entries": [{
+            "name": "panel.test",
+            "version": "1.0.0",
+            "source": {"path": str(pkg_dir)},
+            "installed_at": "2026-05-21T00:00:00+00:00",
+        }]
+    }))
+
+    out_lock = tmp_path / "out-lock.json"
+    monkeypatch.setenv("LMF_LOCK_FILE", str(out_lock))
+    cmd_install_from_lock({"lock": str(lock_file)})
+
+    data = json.loads(out_lock.read_text())
+    assert any(e["name"] == "panel.test" for e in data["entries"])
+
+
+def test_install_from_lock_unknown_source_type_fails(tmp_path, capsys, monkeypatch):
+    from features.feature_manager.manager import cmd_install_from_lock
+    import json, pytest
+
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_text(json.dumps({
+        "version": 1,
+        "entries": [{
+            "name": "panel.bad",
+            "version": "1.0.0",
+            "source": {"s3": "s3://bucket/pkg.zip"},
+            "installed_at": "2026-05-21T00:00:00+00:00",
+        }]
+    }))
+
+    out_lock = tmp_path / "out-lock.json"
+    monkeypatch.setenv("LMF_LOCK_FILE", str(out_lock))
+    with pytest.raises(SystemExit):
+        cmd_install_from_lock({"lock": str(lock_file)})
+    captured = capsys.readouterr()
+    assert "failed" in captured.out.lower()
+
+
+def test_install_from_lock_skips_missing_manifest(tmp_path, capsys, monkeypatch):
+    from features.feature_manager.manager import cmd_install_from_lock
+    import json
+
+    pkg_dir = tmp_path / "emptypkg"
+    pkg_dir.mkdir()
+
+    lock_file = tmp_path / "lock.json"
+    lock_file.write_text(json.dumps({
+        "version": 1,
+        "entries": [{
+            "name": "panel.missing",
+            "version": "1.0.0",
+            "source": {"path": str(pkg_dir)},
+            "installed_at": "2026-05-21T00:00:00+00:00",
+        }]
+    }))
+
+    out_lock = tmp_path / "out-lock.json"
+    monkeypatch.setenv("LMF_LOCK_FILE", str(out_lock))
+    import pytest
+    with pytest.raises(SystemExit):
+        cmd_install_from_lock({"lock": str(lock_file)})
+    captured = capsys.readouterr()
+    assert "lmf-manifest.json" in captured.out
