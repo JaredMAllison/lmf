@@ -74,12 +74,13 @@ Extensions are vaults the operator dispatches into from their home cockpit. They
 
 ## Grounding Infrastructure
 
-`VAULT.md` and the vendor adapter layer are named here as vocabulary terms. Their implementation — how `VAULT.md` is structured, how adapters are generated — is a downstream deliverable. These terms exist now because the vocabulary must name what the system intends, even before the implementation exists.
+`VAULT.md`, the vendor adapter layer, and the grounding service are named here as vocabulary terms. Their implementation — how `VAULT.md` is structured, how adapters are generated, which grounding service is running — is partly specified (ADR-024, ADR-025) and partly downstream deliverable. These terms exist now because the vocabulary must name what the system intends, even before the implementation is complete.
 
 | Term | Definition | Not |
 |---|---|---|
 | `VAULT.md` | The agnostic grounding file at the root of any vault — home vault or extension. Defines what the vault is, the operator's frame preference, and the role archetype for dispatched models. Model-agnostic: any model can read it. The source of truth from which vendor-specific adapter files are derived. | A replacement for `LOCAL_MIND_FOUNDATION.md`. The profile is the operator's cognitive self-model; `VAULT.md` is the vault's grounding context for dispatched models. |
 | `vendor adapter` | A vendor-specific file or runtime mechanism that delivers agnostic grounding to a particular model. `CLAUDE.md` is a vendor adapter for Claude Code. `opencode.md` for OpenCode. `AGENTS.md` for agent frameworks. API system prompts for Groq and direct-API vendors. Derived from `VAULT.md`. | The grounding itself. The adapter is the delivery mechanism; `VAULT.md` is the content. |
+| `grounding service` | A background process that enables the AI layer to search, read, and navigate vault content in real time. Exposes vault search, section reads, and graph traversal as tools the vendor adapter can invoke. Required for vault-aware LMF instances. Knowledge Loom (`odinkirk/knowledge-loom`) is the canonical implementation — a Rust binary serving BM25, semantic, and wikilink graph search via MCP. MCP (Model Context Protocol) is the current canonical wire protocol between vendor adapters and grounding services; it is an implementation detail of the layer, not a vocabulary concept in itself. | A plugin or skill. The grounding service is infrastructure — always running, not invoked per-task. It is what makes the vault searchable to the AI layer at all. |
 
 ---
 
