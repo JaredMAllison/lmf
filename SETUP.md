@@ -1,6 +1,14 @@
 # LMF Setup — Manual
 
-This is the manual setup path. An automated one-liner is coming. Use this for now.
+An automated one-liner is coming. Use this for now.
+
+**Already partially set up?** Skip to the check script:
+```bash
+python scripts/lmf-check.py
+```
+It tells you exactly what's done and what still needs fixing. Run it after each step until all green.
+
+---
 
 **Time:** ~10 minutes  
 **Prerequisites:** Ollama installed and running, Python 3.x, git
