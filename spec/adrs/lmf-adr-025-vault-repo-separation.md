@@ -25,7 +25,9 @@ LMF operates across three distinct layers, each with its own home:
 The `JaredMAllison/lmf.git` repo. Contains specs, catalog, Feature Manager, schemas, init wizard, and runtime code. Shared, upgradeable, not operator-specific. Development and contributions happen here.
 
 **2. LMF runtime** (`~/.lmf/`)  
-The operator's LMF home directory. Contains installed packages, the lock file (`installed-lock.json`), and the install workspace. Not a git repo. Already the default location in the Feature Manager (`LOCK_FILE = Path.home() / ".lmf" / "installed-lock.json"`).
+The operator's LMF home directory. Contains installed packages, the install workspace, and a symlink to the lock file. Not a git repo.
+
+`~/.lmf/installed-lock.json` is a symlink. The real file lives at the vault root (`<vault>/installed-lock.json`) so that a single vault backup or thumbdrive pull contains everything needed for recovery. The init wizard creates the symlink. On recovery to a new machine or path, the symlink is re-created pointing at the restored vault location — one step, trivial.
 
 **3. Vault** (operator's Obsidian vault, wherever they keep it)  
 The operator's personal second brain. Contains personal notes only, plus two bridge files (`CLAUDE.md` and `.mcp.json`) that connect the vault to LMF. The vault is NOT a checkout of `lmf.git`. It has its own independent git and sync story.
@@ -37,7 +39,26 @@ git clone https://github.com/JaredMAllison/lmf.git ~/git/lmf
 python ~/git/lmf/features/feature_manager/manager.py init
 ```
 
-The init wizard asks for the vault path and assistant name, installs baseline features to `~/.lmf/`, and drops `CLAUDE.md` and `.mcp.json` into the vault root. The operator's vault never becomes an LMF git checkout.
+The init wizard asks for the vault path and assistant name, installs baseline features to `~/.lmf/`, drops `CLAUDE.md` and `.mcp.json` into the vault root, creates `<vault>/installed-lock.json`, and symlinks `~/.lmf/installed-lock.json` to it. The operator's vault never becomes an LMF git checkout.
+
+### Backup surface
+
+| What | Backed up where |
+|---|---|
+| Personal vault content | Vault (git + Syncthing) |
+| `installed-lock.json` | Vault root (real file, tracked in vault git) |
+| LMF framework | Not backed up — public repo, re-cloneable |
+| Package workspace | Not backed up — re-installable from lock file |
+
+A thumbdrive pull of the vault is a complete recovery artifact. Recovery on a new machine:
+```
+1. Restore vault
+2. git clone https://github.com/JaredMAllison/lmf.git ~/git/lmf
+3. ln -s <vault>/installed-lock.json ~/.lmf/installed-lock.json
+4. lmf install --from-lock
+```
+
+The symlink path changes on recovery; the lock file contents do not. Step 3 is the only path-aware operation.
 
 ### Baseline (auto-installed)
 
