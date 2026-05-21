@@ -8,7 +8,7 @@
     "install": [
       "cargo build --release",
       "cp target/release/loom {{VAULT_PATH}}/.knowledge-loom/bin/loom",
-      "KB_ROOT={{VAULT_PATH}} .knowledge-loom/bin/loom init --platform claude"
+      "KB_ROOT={{VAULT_PATH}} VAULT_PATH={{VAULT_PATH}} {{VAULT_PATH}}/.knowledge-loom/bin/loom reindex"
     ],
     "dependencies": [],
     "health_endpoint": "loom index-status",
