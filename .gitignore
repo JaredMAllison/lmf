@@ -10,6 +10,7 @@ __pycache__/
 .code-review-graph/
 .knowledge-loom-index/
 .knowledge-loom/
+.mcp.json
 .obsidian/
 .fastembed_cache/
 
