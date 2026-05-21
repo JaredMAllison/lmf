@@ -9,7 +9,10 @@ __pycache__/
 .worktrees/
 .code-review-graph/
 .knowledge-loom-index/
+.knowledge-loom/
+.mcp.json
 .obsidian/
+.fastembed_cache/
 
 # Instance-specific config (use config.yaml.example)
 stack/operator/config.yaml
@@ -19,3 +22,30 @@ features/installed-lock.json
 
 # Ephemeral session artifacts
 docs/superpowers/plans/
+
+# Personal vault content — NEVER commit, NEVER stash, NEVER clean
+# These are operator data, not repo files.
+ADL-log.md
+Applications/
+Daily/
+Decisions/
+Hardware/
+Images/
+Inbox.md
+Insights/
+InkBlotter/
+JARED.md
+Learning/
+Moot.md
+Outbox/
+People/
+Projects/
+Quota Insight/
+Quotes/
+scribner/
+System/
+Tasks/
+Vault/
+_ttf.md
+_workflow.md
+INIT_GAPS.md
