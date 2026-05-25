@@ -25,7 +25,7 @@ from pathlib import Path
 import requests
 import yaml
 
-from lmf.build_prompt import build_prompt
+from lmf.build_prompt import build_prompt, build_manifest
 
 from lmf.backends import build_backend, BackendError, RateLimitError, BackendResult
 from lmf.vault_io import VaultIO
@@ -109,6 +109,15 @@ PORT              = 8742
 SKILLS_DIR        = "System/Skills"
 UI_FILE: Path | None = None  # set by run_with() via Handler.ui_file
 
+# Awareness config — read from config.yaml during _init_config()
+STALE_THRESHOLD       = 3    # turns before active→stale
+EVICT_THRESHOLD       = 6    # turns before stale→evicted
+SESSION_MEMORY_TURNS  = 3    # summaries to forward in manifest
+CHAR_PER_TOKEN        = 4    # heuristic for budget calculation
+MANIFEST_LOG_MAX      = 50   # max provenance log entries
+SHOW_METER_IN_PROMPT  = True # render meter bar in manifest text
+KNOWLEDGE_DOMAINS     = []   # list of {"path": ..., "description": ...} for background primer
+
 # Backend + pacing globals — populated by _init_backends()
 BACKENDS          : list[tuple[int, object]] = []
 ACTIVE_BACKEND    : str | None = None
@@ -121,6 +130,7 @@ def _init_config(config_path: Path | None = None) -> None:
     """Read operator config and populate runtime globals. Called only inside run_with()."""
     global OLLAMA_URL, OLLAMA_PS_URL, OLLAMA_MODEL, OLLAMA_TIMEOUT, OLLAMA_NUM_CTX, PORT
     global BACKENDS, ACTIVE_BACKEND, TURBO_MODE, PACING_INTERVAL, LAST_REQUEST_TIME
+    global STALE_THRESHOLD, EVICT_THRESHOLD, SESSION_MEMORY_TURNS, CHAR_PER_TOKEN, MANIFEST_LOG_MAX, KNOWLEDGE_DOMAINS
     cfg = load_config(config_path)
 
     # Legacy single-backend fields (backwards compat — used by status endpoint for Ollama)
@@ -136,6 +146,15 @@ def _init_config(config_path: Path | None = None) -> None:
     TURBO_MODE     = pacing.get("mode", "slow") == "turbo"
     PACING_INTERVAL = int(pacing.get("interval_s", 8))
     LAST_REQUEST_TIME = 0.0
+
+    # Awareness — every knob available, none required
+    awareness = cfg.get("awareness", {})
+    STALE_THRESHOLD      = int(awareness.get("stale_threshold", 3))
+    EVICT_THRESHOLD      = int(awareness.get("evict_threshold", 6))
+    SESSION_MEMORY_TURNS = int(awareness.get("session_memory_turns", 3))
+    CHAR_PER_TOKEN       = int(awareness.get("char_per_token", 4))
+    MANIFEST_LOG_MAX     = int(awareness.get("manifest_log_max", 50))
+    KNOWLEDGE_DOMAINS    = awareness.get("knowledge_domains", [])
 
     # Backends
     BACKENDS = []
@@ -202,6 +221,20 @@ class Orchestrator:
         self.kb = VaultIO(vault_path)
 
         self.loom_url = os.environ.get("LOOM_URL", "http://knowledge-loom:8888")
+        self.fresh_context = False  # set True by subclasses that use manifest-driven awareness
+        self.turn_number = 0
+        self.awareness: dict = {
+            "pinned": {},
+            "active": {},
+            "stale": {},
+            "dismissed": {},
+            "budget_remaining": OLLAMA_NUM_CTX,
+            "budget_total": OLLAMA_NUM_CTX,
+        }
+        self.never_ask: set[str] = set()  # dismissed files operator said "never" for
+        self.session_memory: list[str] = []  # last N turn summaries for conversational awareness
+        self.manifest_log: list[dict] = []  # turn-by-turn manifest snapshots for provenance
+        self._manifest_log_max = MANIFEST_LOG_MAX
 
         if self.is_init_mode:
             self._enter_init_mode()
@@ -258,9 +291,114 @@ class Orchestrator:
         self.init_state = init_state
         self.init_handoff = None
 
+    def _register_file_access(self, file_path: str):
+        """Track that a file was accessed this turn. Updates awareness state."""
+        if not self.fresh_context:
+            return
+        now = self.turn_number
+        # If file is in never_ask, it stays dismissed permanently
+        if file_path in self.never_ask:
+            return
+        # If file was dismissed, revive it (moves to active)
+        if file_path in self.awareness["dismissed"]:
+            info = self.awareness["dismissed"].pop(file_path)
+            info["last_turn"] = now
+            info["access_count"] = info.get("access_count", 0) + 1
+            info["revived"] = True
+            self.awareness["active"][file_path] = info
+            return
+        if file_path in self.awareness["pinned"]:
+            self.awareness["pinned"][file_path]["last_turn"] = now
+            self.awareness["pinned"][file_path]["access_count"] = \
+                self.awareness["pinned"][file_path].get("access_count", 0) + 1
+            return
+        if file_path in self.awareness["active"]:
+            self.awareness["active"][file_path]["last_turn"] = now
+            self.awareness["active"][file_path]["access_count"] += 1
+            return
+        if file_path in self.awareness["stale"]:
+            info = self.awareness["stale"].pop(file_path)
+            info["last_turn"] = now
+            info["access_count"] = info.get("access_count", 0) + 1
+            self.awareness["active"][file_path] = info
+            return
+        # New file — add to active
+        self.awareness["active"][file_path] = {"last_turn": now, "access_count": 1}
+
+    def _age_awareness(self):
+        """Called at end of each turn. Moves old active → stale, evicts old stale."""
+        if not self.fresh_context:
+            return
+        now = self.turn_number
+
+        # Move old active → stale
+        new_stale = {}
+        still_active = {}
+        for path, info in self.awareness["active"].items():
+            if path in self.awareness["pinned"]:
+                still_active[path] = info
+            elif now - info.get("last_turn", now) >= STALE_THRESHOLD:
+                info["eviction_in"] = EVICT_THRESHOLD - (now - info.get("last_turn", now))
+                new_stale[path] = info
+            else:
+                still_active[path] = info
+        self.awareness["active"] = still_active
+
+        # Merge existing stale, recalc eviction
+        existing_stale = {}
+        for path, info in self.awareness["stale"].items():
+            if path in self.awareness["pinned"]:
+                still_active[path] = self.awareness["stale"].get(path, info)
+                continue
+            elapsed = now - info.get("last_turn", now)
+            if elapsed >= EVICT_THRESHOLD:
+                continue  # evicted — dropped
+            info["eviction_in"] = EVICT_THRESHOLD - elapsed
+            existing_stale[path] = info
+        self.awareness["stale"] = {**existing_stale, **new_stale}
+
+        # Update budget from context — heuristic: ~4 chars per token
+        self.awareness["budget_remaining"] = max(
+            0,
+            OLLAMA_NUM_CTX - len(self.system_prompt) // CHAR_PER_TOKEN
+        )
+
+    def _log_manifest_snapshot(self):
+        """Append current awareness state to the provenance log."""
+        if not self.fresh_context:
+            return
+        snapshot = {
+            "turn": self.turn_number,
+            "pinned": list(self.awareness["pinned"].keys()),
+            "active": list(self.awareness["active"].keys()),
+            "stale": list(self.awareness["stale"].keys()),
+            "dismissed": list(self.awareness["dismissed"].keys()),
+            "budget_remaining": self.awareness.get("budget_remaining", 0),
+            "budget_total": self.awareness.get("budget_total", OLLAMA_NUM_CTX),
+            "meter_pct": int(
+                (1 - self.awareness.get("budget_remaining", 0)
+                 / max(self.awareness.get("budget_total", 1), 1)) * 100
+            ),
+        }
+        self.manifest_log.append(snapshot)
+        if len(self.manifest_log) > self._manifest_log_max:
+            self.manifest_log = self.manifest_log[-self._manifest_log_max:]
+
     def reset(self):
         self.history = []
         self.pending_write = None
+        self.turn_number = 0
+        self.awareness = {
+            "pinned": {},
+            "active": {},
+            "stale": {},
+            "dismissed": {},
+            "budget_remaining": OLLAMA_NUM_CTX,
+            "budget_total": OLLAMA_NUM_CTX,
+        }
+        self.never_ask = set()
+        self.session_memory = []
+        self.manifest_log = []
         if self.is_init_mode:
             self._clear_init_state()
 
@@ -433,6 +571,21 @@ class Orchestrator:
             "properties": {},
             "required": [],
         },
+        "pin_vault_file": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "Vault-relative path to pin"},
+            },
+            "required": ["file_path"],
+        },
+        "eject_vault_file": {
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string", "description": "Vault-relative path to eject from awareness"},
+                "never":     {"type": "boolean", "description": "If true, suppress future revival prompts for this file"},
+            },
+            "required": ["file_path"],
+        },
     }
 
     def _build_tools(self, config_path: Path) -> list[dict]:
@@ -596,12 +749,15 @@ class Orchestrator:
             if name == "search_vault":
                 return json.dumps(self._tool_search(args["query"], top_k=args.get("top_k", 5)))
             if name == "read_section":
+                self._register_file_access(args["file_path"])
                 r = self._tool_read_section(args["file_path"], args["heading"])
                 return json.dumps(r if r else {"error": "Section not found"})
             if name == "read_lines":
+                self._register_file_access(args["file_path"])
                 r = self._tool_read_lines(args["file_path"], args["start_line"], args["end_line"])
                 return json.dumps(r if r else {"error": "File not found"})
             if name == "outline":
+                self._register_file_access(args["file_path"])
                 return json.dumps(self._tool_outline(args["file_path"]))
             if name == "grep_vault":
                 return json.dumps(self._tool_grep(args["pattern"], file_filter=args.get("file_filter")))
@@ -617,6 +773,35 @@ class Orchestrator:
                     args["file_path"], args["heading"], args["content"]))
             if name == "list_files":
                 return json.dumps(self.kb.list_files())
+            if name == "pin_vault_file":
+                fp = args["file_path"]
+                # Move from any state to pinned
+                for bucket in ("active", "stale", "dismissed"):
+                    if fp in self.awareness[bucket]:
+                        info = self.awareness[bucket].pop(fp)
+                        info["last_turn"] = self.turn_number
+                        self.awareness["pinned"][fp] = info
+                        return json.dumps({"status": "pinned", "file": fp})
+                # New file
+                self.awareness["pinned"][fp] = {"last_turn": self.turn_number, "access_count": 0}
+                return json.dumps({"status": "pinned", "file": fp})
+            if name == "eject_vault_file":
+                fp = args["file_path"]
+                never = args.get("never", False)
+                if fp in self.awareness["pinned"]:
+                    return json.dumps({"error": f"Cannot eject pinned file: {fp}. Unpin first."})
+                for bucket in ("active", "stale"):
+                    if fp in self.awareness[bucket]:
+                        info = self.awareness[bucket].pop(fp)
+                        self.awareness["dismissed"][fp] = info
+                        if never:
+                            self.never_ask.add(fp)
+                        return json.dumps({"status": "ejected", "file": fp, "never": never})
+                if fp in self.awareness["dismissed"]:
+                    if never:
+                        self.never_ask.add(fp)
+                    return json.dumps({"status": "already dismissed", "file": fp, "never": never})
+                return json.dumps({"error": f"File not in awareness: {fp}"})
             return json.dumps({"error": f"Unknown tool: {name}"})
         except Exception as e:
             return json.dumps({"error": str(e)})
@@ -654,7 +839,28 @@ class Orchestrator:
             state = "Turbo ON — pacing disabled" if TURBO_MODE else "Slow mode ON — pacing active"
             return state
 
-        messages = [{"role": "system", "content": self.system_prompt}]
+        self.turn_number += 1
+        system_content = self.system_prompt
+
+        # Inject manifest if fresh_context mode
+        if self.fresh_context:
+            self._age_awareness()
+            manifest_text = build_manifest(
+                self.awareness, self.turn_number,
+                session_summaries=self.session_memory,
+                show_meter=SHOW_METER_IN_PROMPT,
+                knowledge_domains=KNOWLEDGE_DOMAINS,
+            )
+            system_content = f"{self.system_prompt}\n\n{manifest_text}"
+
+            # Add manifest instruction to system prompt
+            system_content += (
+                "\n\nEach turn starts fresh — only the files listed above are loaded. "
+                "If the operator asks about something not in the manifest, use the "
+                "available tools to look it up."
+            )
+
+        messages = [{"role": "system", "content": system_content}]
 
         # Inject skill if triggered
         skill_name = parse_skill_trigger(user_message)
@@ -771,6 +977,9 @@ class Orchestrator:
             self.init_state["profile_draft"] = profile
             self._save_init_state()
 
+        # Log manifest snapshot for provenance (only in fresh_context mode)
+        self._log_manifest_snapshot()
+
         # Only clean text exchanges go into history — tool call traces are transient
         self.history.append({"role": "user", "content": user_message})
         self.history.append({"role": "assistant", "content": reply})
@@ -802,6 +1011,55 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
+    def _handle_focus(self):
+        orch = self.orchestrator
+        files = {}
+
+        def _build_entry(path: str, status: str, info: dict) -> dict:
+            return {
+                "path": path,
+                "status": status,
+                "last_turn": info.get("last_turn", 0),
+                "access_count": info.get("access_count", 0),
+                "eviction_in": info.get("eviction_in"),
+                "revived": info.get("revived", False),
+            }
+
+        for path, info in orch.awareness.get("pinned", {}).items():
+            files[path] = _build_entry(path, "pinned", info)
+        for path, info in orch.awareness.get("active", {}).items():
+            files[path] = _build_entry(path, "active", info)
+        for path, info in orch.awareness.get("stale", {}).items():
+            files[path] = _build_entry(path, "stale", info)
+        for path, info in orch.awareness.get("dismissed", {}).items():
+            files[path] = _build_entry(path, "dismissed", info)
+
+        self._respond(200, {
+            "files": files,
+            "turn_number": orch.turn_number,
+            "budget_remaining": orch.awareness.get("budget_remaining", 0),
+            "budget_total": orch.awareness.get("budget_total", OLLAMA_NUM_CTX),
+            "meter_pct": int(
+                (1 - orch.awareness.get("budget_remaining", 0) / max(orch.awareness.get("budget_total", 1), 1)) * 100
+            ),
+            "fresh_context": orch.fresh_context,
+            "log_length": len(orch.manifest_log),
+        })
+
+    def _handle_focus_history(self):
+        orch = self.orchestrator
+        from urllib.parse import urlparse, parse_qs
+
+        qs = parse_qs(urlparse(self.path).query)
+        limit = int(qs.get("limit", [50])[0])
+        history = orch.manifest_log[-limit:] if orch.manifest_log else []
+
+        self._respond(200, {
+            "history": history,
+            "total_logged": len(orch.manifest_log),
+            "returned": len(history),
+        })
+
     def _serve_ui(self):
         if self.ui_file is None or not self.ui_file.exists():
             self._respond(404, {"error": "UI file not configured"})
@@ -828,6 +1086,10 @@ class Handler(BaseHTTPRequestHandler):
             self._respond(200, {"status": "ok"})
         elif self.path == "/status":
             self._handle_status()
+        elif self.path == "/focus":
+            self._handle_focus()
+        elif self.path == "/focus/history":
+            self._handle_focus_history()
         else:
             self._respond(404, {"error": "not found"})
 
@@ -872,6 +1134,9 @@ class Handler(BaseHTTPRequestHandler):
             "active_backend": ACTIVE_BACKEND,
             "backends": [{"name": b.name, "available": b.is_available, "last_error": b.last_error}
                          for _, b in BACKENDS],
+            "fresh_context": orch.fresh_context,
+            "turn_number": orch.turn_number,
+            "aware_file_count": len(orch.awareness["pinned"]) + len(orch.awareness["active"]),
         })
 
     def do_POST(self):
