@@ -156,8 +156,8 @@ def _init_config(config_path: Path | None = None) -> None:
     MANIFEST_LOG_MAX     = int(awareness.get("manifest_log_max", 50))
     KNOWLEDGE_DOMAINS    = awareness.get("knowledge_domains", [])
 
-    # Backends
-    BACKENDS = []
+    # Backends — mutate in-place so any existing references stay valid
+    BACKENDS.clear()
     for entry in cfg.get("backends", []):
         name = entry["name"]
         # Check for unresolved env vars
