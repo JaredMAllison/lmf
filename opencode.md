@@ -46,7 +46,7 @@ lmf/
 │   ├── covenant.md          ← All nine terms with rationale
 │   ├── vocabulary.md        ← Canonical term definitions — use these, not synonyms
 │   ├── architecture.md      ← System architecture overview
-│   ├── adrs/                ← Framework ADRs (lmf-adr-NNN-*.md, current high: 025)
+│   ├── adrs/                ← Framework ADRs (lmf-adr-NNN-*.md, current high: 028)
 │   └── frames/              ← Metaphor translation tables
 ├── features/
 │   ├── feature_manager/     ← Python CLI: install, update, validate, list, install-from-lock
@@ -96,3 +96,4 @@ Claude Code writes the plan. You open it cold and work the checkboxes. If someth
 - Squash merge only
 - PR description must state which Covenant terms the change touches (or "no Covenant impact")
 - ADRs for structural decisions before implementation, not after
+- **Search prior decisions before implementing anything structural:** `python3 ~/git/lmf/scripts/adr-search.py <term> ...` — covers the LMF spec (read via `git show main:`, since this checkout is usually behind main), the Marlin vault, feature ADRs, and Sol3 in one pass. Run it before writing code, not after. If a hit contradicts the plan you were handed, **stop and raise it** rather than implementing around it — you own the "how," and a conflicting ADR is a "why" question.
