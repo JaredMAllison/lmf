@@ -83,6 +83,19 @@ Knowledge Loom MCP, operator profile scaffold, CLAUDE.md bridge. All other featu
 
 The Marlin reference implementation pushes vault content to a GitHub private remote as a temporary file safety measure, pending a proper BDR (Backup/Disaster Recovery) implementation. This is a deliberate concession of Local Sovereignty (Covenant Term 1), accepted explicitly and noted here so future operators understand the trade-off being made.
 
+### Marlin migration steps (historical, reference implementation)
+
+Recovered 2026-08-19 from the Marlin vault's divergent copy of this ADR, during the ADR-026 de-duplication pass. These steps were carried out at the time of the split and are retained as the worked example of what separation costs an existing instance.
+
+1. `git remote remove origin` in vault repo
+2. Delete `features/`, `stack/`, `spec/`, `docs/`, `layouts/`, `profile/`, `init/`, `opencode.md` from vault
+3. Flip `.gitignore`: track personal content, ignore runtime artifacts (`.lmf/`, `.claude/`, `.obsidian/`)
+4. `git remote add origin git@github.com:JaredMAllison/marlin-vault.git` (private)
+5. Move lock file default to `~/.lmf/installed-lock.json` (already the Feature Manager default)
+6. Update `CLAUDE.md` to reference `~/.lmf/` instead of vault-relative paths
+
+The instance-side consequence recorded alongside them: *"The Marlin migration requires deleting framework directories from the vault, flipping `.gitignore`, and disconnecting the `lmf.git` remote."*
+
 ## Doctrine alignment
 
 - **Covenant Term 1 (Local Sovereignty):** Vault content remains operator-owned. GitHub remote is a noted sovereignty trade-off, accepted explicitly.

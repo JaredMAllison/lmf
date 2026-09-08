@@ -4,8 +4,20 @@ type: adr
 project: LMF
 status: accepted
 date: 2026-05-16
+amended_by: "[[lmf-adr-028-sharing-orthogonal-to-vault-kind]]"
 tags: [adr, lmf, vault, architecture, multi-user]
 ---
+
+> ⚠️ **Amended 2026-08-19 by [[lmf-adr-028-sharing-orthogonal-to-vault-kind]].**
+>
+> **Still current:** the three-tier role model (Admin / Contributor / Reader). ADR-028 retains it in full and builds on it.
+>
+> **No longer current, do not cite:**
+> - *"MUSV is a first-class LMF vault type."* Sharing is orthogonal to vault kind. Kinds are `instance` / `project vault` / `knowledge vault`; multi-user is a property of the access table, not a type.
+> - *"Marlin remains single-user."* Falsified by [[marlin-adr-050-multi-operator-exobrain]] (2026-07-14), which made Tori a full second operator on Marlin. The correct rule is that **instance Admin is non-transferable**, not that instances cannot be shared.
+> - *"Jaina's Reader access ... deferred until her LMF instance is built."* A Reader needs read-only **dispatch into an extension**, not an instance. The deferral was an artifact of the wrong model.
+>
+> **Retyped:** Athenaeum is a `knowledge vault` (an extension), not "the first MUSV."
 
 ## Context
 
