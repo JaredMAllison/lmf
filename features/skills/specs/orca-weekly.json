@@ -1,0 +1,11 @@
+{
+  "id": "orca-weekly",
+  "name": "ORCA Weekly Ingest",
+  "description": "Imports a school week into a knowledge vault from a teacher-provided checklist PDF, merged with a Canvas iCal feed for authoritative due dates.",
+  "stability": "Experimental",
+  "trust": "Solo",
+  "dependencies": [],
+  "user_agnostic": true,
+  "vault_agnostic": false,
+  "version": "1.0.0"
+}
